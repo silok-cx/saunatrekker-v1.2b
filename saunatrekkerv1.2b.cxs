@@ -1,0 +1,3637 @@
+'**************************************************************************
+'         SAUNATREKKER V1.2b - 10/27/2025 by Silok/sgp - Robert Katsenos
+'            This Sourcecode relays on the GNU/GPLv3 license
+'           Contact: RobertK at the Forum of https://www.cerberus-x.com
+'                    or at Github: silok-cx
+'**************************************************************************
+
+
+Import mojo
+'Import mikmod
+Import brl.requesters
+Import brl.filestream
+Import os
+
+'---Main---.
+Class MyApp Extends App
+
+
+	Global scl:Int=2 ' Scale
+	Global Border:Int=10
+	
+	Global tfont:Font
+	Global tfont2:Font
+	Global tfont3:Font
+	
+	Global Info:String
+	Global Start_Info:Int[]=[$53,$41,$55,$4E,$41,$54,$52,$45,$4b,$4b,$45,$52,$20,$56,$31,$2E,$31,$42]
+	
+	Global octave:Int
+	
+	Global tracks:Int[80000]
+	Global tracks_inst:Int[80000]
+	Global tracks_fx:Int[80000]
+	Global tracks_fx2:Int[80000]
+
+	Global tracks01:Int[80000]
+	Global tracks02:Int[80000]
+	Global tracks03:Int[80000]
+	Global tracks04:Int[80000]
+	
+	Global tracks_inst01:Int[80000]
+	Global tracks_inst02:Int[80000]
+	Global tracks_inst03:Int[80000]
+	Global tracks_inst04:Int[80000]
+	
+	Global tracks_fx01:Int[80000]
+	Global tracks_fx02:Int[80000]
+	Global tracks_fx03:Int[80000]
+	Global tracks_fx04:Int[80000]
+	
+	Global tracks_fx201:Int[80000]
+	Global tracks_fx202:Int[80000]
+	Global tracks_fx203:Int[80000]
+	Global tracks_fx204:Int[80000]
+	
+	Global Volume01:Float=64
+	Global Volume02:Float=64
+	Global Volume03:Float=64
+	Global Volume04:Float=64
+
+	Global VVolume01:Float=64
+	Global VVolume02:Float=64
+	Global VVolume03:Float=64
+	Global VVolume04:Float=64
+		
+	Global PitchVal01:Float
+	Global PitchVal02:Float
+	Global PitchVal03:Float
+	Global PitchVal04:Float
+		
+	Global ChanMute01:Int=0
+	Global ChanMute02:Int=0
+	Global ChanMute03:Int=0
+	Global ChanMute04:Int=0
+	
+	Global CurrentInst:Int=1
+	Global CurrentTrack:Int'Atm for graphicalstuff
+	Global CurrentT:Int
+	Global CursorPos:Int
+	
+	Global FontW:Int=8
+	Global DisplayLength:Int=7
+	Global PlayMode=0 ' 1= Enabled
+	Global EditMode=0 ' 1= Enabled
+	Global PatternPlay=0 ' 1= Enabled
+	Global RecordSong=0 ' 1= Enabled
+	Global SDisplay:Int
+	Global ClearChoice:Int ' ClearMenu
+	
+	Global Vumeter:Image
+	Global Background:Image
+	Global Prtcursor:Image
+	Global Prtmouse:Image
+	Global SampDisplay:Image
+	Global SpectraDisplay:Image
+	Global SpectraMeter:Image
+	Global AboutScreen:Image
+	Global ClearMenu:Image
+	
+	Global KeyTime:Int
+	
+	' Speed fx devider
+	Global dfx:Float
+
+	' Arpcount
+	Global ArpCounter:Int
+	Global ArpVal01:float
+	Global ArpVal02:float
+	Global ArpVal03:float
+	Global ArpVal04:Float
+	
+	' Vibrato
+	Global Vibrato01_speed:Int
+	Global Vibrato02_speed:Int
+	Global Vibrato03_speed:Int
+	Global Vibrato04_speed:Int
+
+	Global Vibrato01_depth:Int
+	Global Vibrato02_depth:Int
+	Global Vibrato03_depth:Int
+	Global Vibrato04_depth:Int
+
+	Global Vibrato01_p:Float
+	Global Vibrato02_p:Float
+	Global Vibrato03_p:Float
+	Global Vibrato04_p:Float
+	
+	Global vib_seq01:Float
+	Global vib_seq02:Float
+	Global vib_seq03:Float
+	Global vib_seq04:Float
+	
+	' Glide
+	Global GlideVal01:Float
+	Global GlideVal02:Float
+	Global GlideVal03:Float
+	Global GlideVal04:Float
+	
+	Global GlideNote01:Int
+	Global GlideNote02:Int
+	Global GlideNote03:Int
+	Global GlideNote04:Int
+	' Oct-25
+	Global GlideCount01:Float
+	Global GlideCount02:Float
+	Global GlideCount03:Float
+	Global GlideCount04:Float
+	
+	' Lastnotesmemory
+	Global LastNote01:Int
+	Global LastNote02:Int
+	Global LastNote03:Int
+	Global LastNote04:Int
+	
+	Global LastInst01:Int
+	Global LastInst02:Int
+	Global LastInst03:Int
+	Global LastInst04:Int
+	
+	Global LastFX01:Int
+	Global LastFX02:Int
+	Global LastFX03:Int
+	Global LastFX04:Int
+	
+	Global LastFX201:Int
+	Global LastFX202:Int
+	Global LastFX203:Int
+	Global LastFX204:Int
+	
+	' EDx SampleTrigger Okt-25
+	Global EDTrigger01:Float
+	Global EDTrigger02:Float
+	Global EDTrigger03:Float
+	Global EDTrigger04:Float
+	
+	' Authorlogo
+	Global author:String="1110101000111010110001010001010101111010100010101100010101000101010111101011101110101"
+	
+	Global DDump:Int[]=[$71,$78,$7F,$87,$8F,$97,$A0,$AA,$B4,$BE,$CA,$D6,$E2,$F0,$FE,$0D,$1D,$2E,$40,$53,$68,$7D,$94,$AC,$C5,$E0,$FC,$1A,$3A,$5C,$80,$A6,$D0,$FA,$28,$58]
+	Global UDump:Int[]=[$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$02,$02,$02,$02,$02,$02,$02,$03,$03]
+	' fine 0
+	Global PeriodTable:Int[]=[113,120,127,135,143,151,160,170,180,190,202,214,226,240,254,269,285,302,320,339,360,381,404,428,453,480,508,538,570,604,640,678,720,762,808,856,
+	113,119,126,134,142,150,159,169,179,189,201,213,225,239,253,268,284,300,318,337,357,379,401,425,450,477,505,535,567,601,637,674,715,757,802,850,
+	112,118,125,133,141,149,158,167,177,188,199,211,224,237,251,266,282,298,316,335,355,376,398,422,447,474,502,532,563,597,632,670,709,752,796,844,
+	111,118,125,132,140,148,157,166,176,187,198,209,222,235,249,264,280,296,314,332,352,373,395,419,444,470,498,528,559,592,628,665,704,746,791,838,
+	110,117,124,131,139,147,156,165,175,185,196,208,220,233,247,262,278,294,312,330,350,370,392,416,441,467,495,524,555,588,623,660,699,741,785,832,
+	109,116,123,130,138,146,155,164,174,184,195,206,219,232,245,260,276,292,309,328,347,368,390,413,437,463,491,520,551,584,619,655,694,736,779,826,
+	109,115,122,129,137,145,154,163,172,183,193,205,217,230,244,258,274,290,307,325,345,365,387,410,434,460,487,516,547,580,614,651,689,730,774,820,
+	108,114,121,128,136,144,152,161,171,181,192,204,216,228,242,256,272,288,305,323,342,363,384,407,431,457,484,513,543,575,610,646,684,725,768,814,
+	120,127,135,143,151,160,170,180,190,202,214,226,240,254,269,285,302,320,339,360,381,404,428,453,480,508,538,570,604,640,678,720,762,808,856,907,
+	119,126,134,142,150,159,169,179,189,200,212,225,238,253,268,284,300,318,337,357,379,401,425,450,477,505,535,567,601,636,675,715,757,802,850,900,
+	118,125,133,141,149,158,167,177,188,199,211,223,237,251,266,282,298,316,335,355,376,398,422,447,474,502,532,563,597,632,670,709,752,796,844,894,
+	118,125,132,140,148,157,166,176,187,198,209,222,235,249,264,280,296,314,332,352,373,395,419,444,470,498,528,559,592,628,665,704,746,791,838,887,
+	117,123,131,139,147,156,165,175,185,196,208,220,233,247,262,278,294,312,330,350,370,392,416,441,467,494,524,555,588,623,660,699,741,785,832,881,
+	116,123,130,138,146,155,164,174,184,195,206,219,232,245,260,276,292,309,328,347,368,390,413,437,463,491,520,551,584,619,655,694,736,779,826,875,
+	115,122,129,137,145,154,163,172,183,193,205,217,230,244,258,274,290,307,325,345,365,387,410,434,460,487,516,547,580,614,651,689,730,774,820,868,
+	114,121,128,136,144,152,161,171,181,192,203,216,228,242,256,272,288,305,323,342,363,384,407,431,457,484,513,543,575,610,646,684,725,768,814,862]
+	Global PeriodNote:String[]=["B-3","A#3","A-3","G#3","G-3","F#3","F-3","E-3","D#3","D-3","C#3","C-3","B-2","A#2","A-2","G#2","G-2","F#2","F-2","E-2","D#2","D-2","C#2","C-2","B-1","A#1","A-1","G#1","G-1","F#1","F-1","E-1","D#1","D-1","C#1","C-1"]
+	Global PeriodByte:Int[]=[48,47,46,45,44,43,42,41,40,39,38,37,36,35,34,33,32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17,16,15,14,13]
+	Global SpectraTable:Int[]=[1,1,1,2,2,3,3,3,4,5,6,6,7,8,9,10,10,11,12,13,13,14,15,16,16,17,18,18,19,19,20,20,21,21,22,22,23]
+	
+	Global fvalue:Int	
+		
+	Global trk:Int
+	Global cpat:Int
+	
+	Global switcher:Int
+	
+	Global s4:int
+	
+	Global speed:Int=6
+	Global framecount:Int
+	
+	Global ppos:Int
+	Global tpos:Int
+	
+	Global pdr63:Int
+	
+	Global patterns:Int[80000]
+	Global songname:String
+	Global songnamelength:Int
+	Global instdesc:String[33]
+	Global samplevolume:int[33]
+	Global samplelength:Int[33]
+	Global samplerepeat:Int[33]
+	Global samplereplen:Int[33]
+	Global Sampledata:String[33]
+	Global finetune:Int[33]
+	
+	Global Songlength:Int
+	Global pattlength:Int
+	
+	Global ModfileData:String
+	Global ModfileDataBin:String
+	Global SavedModfile:String
+	Global Dumpfile:String
+	Global Dseek:Int=1084
+	Global Pseek:Int=952
+
+	Global cmillisecs:Int
+	Global cmillisecs2:Int
+	Global seconds:int
+	
+	Global drop01:Float=64
+	Global drop02:Float=64
+	Global drop03:Float=64
+	Global drop04:Float=64
+	
+	Global Trigger:Int
+	
+	' Scope Variables
+	Global scope_scroll01:Float
+	Global scope_scroll02:Float
+	Global scope_scroll03:Float
+	Global scope_scroll04:Float
+	
+	Global scope_quant01:Float
+	Global scope_quant02:Float
+	Global scope_quant03:Float
+	Global scope_quant04:Float
+	
+	Global ht01:Float
+	Global ht02:Float
+	Global ht03:Float
+	Global ht04:Float
+	
+	Global cinst01:Int
+	Global cinst02:Int
+	Global cinst03:Int
+	Global cinst04:Int
+
+	Global cperiod01:Float
+	Global cperiod02:Float
+	Global cperiod03:Float
+	Global cperiod04:Float
+
+	Global SampledataRaw01:String
+	Global SampledataRaw02:String
+	Global SampledataRaw03:String
+	Global SampledataRaw04:String
+	
+	Global Sample_Looped_Trigger_01:Int
+	Global Sample_Looped_Trigger_02:Int
+	Global Sample_Looped_Trigger_03:Int
+	Global Sample_Looped_Trigger_04:Int
+	
+	Global SampleEnd01:Int
+	Global SampleEnd02:Int
+	Global SampleEnd03:Int
+	Global SampleEnd04:Int
+	
+	'------------------
+	
+	' Spectraanalyzer
+	Global Spectra1:Float[36]	
+	Global Spectra2:Float[36]
+	Global Spectra3:Float[36]
+	Global DisplaySpectra:Int
+	'------------------
+	
+	' Waves
+	Global waveheader:String	
+	Global Samples:Sound[33]
+	Global Samples_looped:Sound[33]
+	Global ClearSound:Sound[33]
+	Global Sample_Looped_Trigger:Int
+	Global Sample_Tracking:Float		
+	'------------------
+	
+	Global Filename:String
+	Global LoadFileName:String
+	Global OldFileName:String
+	
+	Global lastlength:Int
+	Global data_offset:Int
+	
+	Global PScroll:Float ' Sample Display Current Pointer
+	Global cperiodc:Float
+	Global PJazz:Float
+	
+	Global MX:Int' Mouse X
+	Global MY:Int' Mouse Y
+	Global MZ:Int' Mouse Z
+	'Global zoom:Int ' Sample Display Zoom
+	Global TINPUT:Int ' Text Input Songname 1= Enabled
+	Global TINPUT2:Int ' Text Input Samplename 1= Enabled
+	
+	' Config ----------------
+	Global Config:String
+	Global ConfigData:String[]
+	Global GuiColor01:String[]
+	Global GuiColor02:String[]
+	Global GuiColor03:String[]
+	Global FontColor01:String[]	
+	Global FontColor02:String[]	
+	Global WaveColor:String[]	
+	Global BackColor:String[]	
+	Global VumeterTint:String[]
+	'-------------------------
+	
+	' Block Copy
+	Global StartBlock:Int
+	Global EndBlock:Int
+	Global CopyBlockLength:Int
+	Global CopyStartPos:Int
+	Global Mark:Int
+	
+	Global copy_tracks:Int[64]
+	Global copy_tracks_inst:Int[64]
+	Global copy_tracks_fx:Int[64]
+	Global copy_tracks_fx2:Int[64]
+	'-----------
+	
+	Global About:Int
+	
+	Global StereoSeperation:Int
+	
+	Global KeyMap:Int ' 0 = US, 1 = DE
+	
+Method OnCreate()
+
+' Get Configfile
+GetConfig()
+
+SetDeviceWindow(340*scl,276*scl,4)
+HideMouse()
+
+SetUpdateRate(50.00028194)
+
+tfont=Font.Load("protracker.png",32,96,False)
+tfont2=Font.Load("protracker_big.png",32,96,False)
+tfont3=Font.Load("protracker2.png",32,96,False)
+SetFont(tfont)
+	
+	ModfileData=mojo.LoadString("cerberus://data/"+"default.dat") ' Default Modfile
+	waveheader=mojo.LoadString("cerberus://data/wavheader.dat")
+	OldFileName=os.CurrentDir()+"/data/default.dat"
+	LoadFileName=OldFileName
+	Filename="default.dat" ' Default Modfile
+	'------------------------
+	 LoadMod()' slkmodloader
+	 
+			'MikmodInit()
+
+       Vumeter=LoadImage("prt_vumeter_back.png")
+       Prtcursor=LoadImage("prt_cursor_red.png")          
+       SpectraMeter=LoadImage("spectra.png")
+       
+       ppos=0
+        
+        ' The Internal
+        For Local l=0 To 16
+        Info+=String.FromChar(Start_Info[l])
+        Next
+
+End
+
+
+Method OnUpdate()
+
+' GetKey
+	Local k:Int=GetChar()
+	
+' Reset 50 Frame Trigger
+	Trigger=0
+	
+' CurrentT from CurrenTrack use
+CurrentT=CurrentTrack/56
+
+Functionals(k)' Keys and Buttons
+EditSong(k)' Edit The Song
+
+'Muzak.Play
+	
+	If Filename And PlayMode=1
+		SlkModPlay()
+		'MikmodUpdate()
+	Endif
+	If PlayMode=0
+		'MikmodStop()
+	Endif
+
+End
+
+Method Functionals(k:Int)
+
+' Get Mouse Coords
+MX=MouseX
+MY=MouseY
+MZ=MouseZ
+
+' -------------------------- Edit Songname
+If MouseHit(MOUSE_LEFT) And MX>Border*scl And MX<Border*scl+320*scl And MY>Border*scl+100*scl And MY<Border*scl+107*scl  And TINPUT2=0 And TINPUT=0' Clickzone
+EditMode=0 					' Disable EditMode
+TINPUT+=1 
+endif
+If KeyHit(KEY_ENTER) And TINPUT2=0 And TINPUT=1
+EditMode=0 					' Disable EditMode
+TINPUT+=1 					' Enable Textinput
+If TINPUT>1 Then songname=FillSpace(songname,19)' Fill with Zeros by leaving
+If TINPUT>1 Then TINPUT=0 	' Reset by Pressing twice
+Endif
+If TINPUT=1
+	If KeyHit(KEY_BACKSPACE)
+		songname=songname[0..songname.Length-1]
+		KeyTime=0
+	endif 
+	If KeyDown(KEY_BACKSPACE) Then KeyTime+=1
+		If KeyTime>5
+			songname=songname[0..songname.Length-1]
+			KeyTime=0
+		endif								
+		If k>31 And k<127 And songname.Length<20 Then songname+=String.FromChar(k)	
+
+Endif
+
+' -------------------------- Edit Samplename
+If MouseHit(MOUSE_LEFT) And MX>Border*scl And MX<Border*scl+287*scl And MY>Border*scl+108*scl And MY<Border*scl+116*scl  And TINPUT2=0 And TINPUT=0' Clickzone
+EditMode=0 					' Disable EditMode
+TINPUT2+=1 
+endif
+If KeyHit(KEY_ENTER) And TINPUT2=1 And TINPUT=0
+EditMode=0 					' Disable EditMode
+TINPUT2+=1 					' Enable Textinput
+If TINPUT2>1 Then instdesc[CurrentInst]=FillSpace(instdesc[CurrentInst],21)' Fill with Zeros by leaving
+If TINPUT2>1 Then TINPUT2=0 	' Reset by Pressing twice
+Endif
+If TINPUT2=1
+	If KeyHit(KEY_BACKSPACE)
+		instdesc[CurrentInst]=instdesc[CurrentInst][0..instdesc[CurrentInst].Length-1]
+		KeyTime=0
+	endif 
+	If KeyDown(KEY_BACKSPACE) Then KeyTime+=1
+		If KeyTime>5								
+			instdesc[CurrentInst]=instdesc[CurrentInst][0..instdesc[CurrentInst].Length-1]
+			KeyTime=0
+		Endif
+		If k>31 And k<127 And instdesc[CurrentInst].Length<22 Then instdesc[CurrentInst]+=String.FromChar(k)
+Endif
+' ----------------------------------------- Requester and load
+If ButtonZone_Big(244,0,scl)
+
+StopMod()
+StopAll()
+
+LoadFileName=RequestFile("Select a File to Load!","Amiga:mod",False,"data/")
+
+
+If LoadFileName
+
+PlayMode=0
+
+	Info="LOADIND FILE..."
+	os.CopyFile(LoadFileName,os.CurrentDir()+"\data\file.tmp") ' Os Operation
+	ModfileData=""
+	ModfileData=mojo.LoadString("cerberus://data/file.tmp")'"cerberus://data/mod/"+Filename)
+	CleanPatterns() ' Clean Old Data
+	LoadMod()
+	speed=6
+	framecount=0
+	tpos=0
+	ppos=0	
+	Endif
+	
+	OldFileName=LoadFileName
+	
+	Info="ALL RIGHT"
+	EditMode=0
+
+endif
+
+' ------------------------------------
+
+' Load Sample
+If ButtonZone_Big(287,111,scl)
+
+Local SampleFile:String
+Local SampleData:String
+
+StopMod()
+StopAll()
+
+SampleFile=RequestFile("Select a File to Load!","wav",False,"data/")
+
+If SampleFile
+	Info="LOADIND FILE..."
+	os.CopyFile(SampleFile,os.CurrentDir()+"\data\file.tmp") ' Os Operation
+	
+	SampleData=mojo.LoadString("cerberus://data/file.tmp") ' putting data
+	Sampledata[CurrentInst]=LoadWave(SampleData)
+	
+	samplelength[CurrentInst]=Sampledata[CurrentInst].Length
+	LoadSample(CurrentInst) ' Loading as wav
+	
+	Info="ALL RIGHT"
+	EditMode=0
+endif
+endif
+'--------------------
+
+' Save Sample
+If ButtonZone_Big(244,22,scl)
+
+Local SampleFile:String
+Local SampleData:String
+
+Local hibyte:String
+Local lobyte:String=String.FromChar(0)+String.FromChar(0)
+
+StopMod()
+StopAll()
+
+SampleFile=RequestFile("Enter Filename to save file!","wav",True,"data/")
+
+If SampleFile
+	Info="SAVING FILE..."
+	hibyte=String.FromChar(samplelength[CurrentInst])+String.FromChar(((samplelength[CurrentInst])/256))	
+	SaveWave(waveheader+hibyte+lobyte,Sampledata[CurrentInst],SampleFile,0,samplelength[CurrentInst])
+	Info="ALL RIGHT"
+Endif
+endif	
+'--------------------
+
+' Save Mod
+If ButtonZone_Big(244,11,scl)
+
+Local SaveModFile:String
+
+SaveModFile=RequestFile("Enter Filename to save file!","mod",True,"data/")
+
+If SaveModFile
+	Info="SAVING FILE..."
+	SaveMod(SaveModFile,1)
+	Info="ALL RIGHT"
+endif
+endif
+'--------------------
+
+' Clear Song/Samples/All
+If ButtonZone_Big(182,22,scl)
+	ClearChoice=1
+	StopMod()
+	StopAll()
+endif
+If ClearChoice=1
+	If ButtonZone_Big(154,147,scl)
+		CleanSamples()' Samples
+		ClearChoice=0
+	endif
+	If ButtonZone_Big(154,158,scl) Then ClearChoice=0 ' Cancel
+	If ButtonZone_Med(116,146,scl)
+		CleanPatterns()' Patterns/song
+		speed=6
+		songname=""
+		songname=FillSpace(songname,19)' Fill _
+		ClearChoice=0
+	endif
+	If ButtonZone_Med(116,157,scl) ' All
+		CleanSamples()' Samples
+		CleanPatterns()' Patterns/song
+		speed=6
+		songname=""
+		songname=FillSpace(songname,19)' Fill _
+		ClearChoice=0
+	endif
+Endif
+'--------------------
+
+' Clear Current Sample
+If ButtonZone_Big(182,33,scl)
+	StopMod()
+	StopAll()
+	If Confirm("Clear Current Sample!","Are you sure ?",True)
+		Sampledata[CurrentInst]=""
+		samplelength[CurrentInst]=0
+		samplerepeat[CurrentInst]=0
+		samplereplen[CurrentInst]=2
+		finetune[CurrentInst]=0
+		samplevolume[CurrentInst]=64
+		Samples[CurrentInst]=ClearSound[0]
+		Samples_looped[CurrentInst]=ClearSound[0]
+	endif
+Endif
+
+' --------------------------------------- Function Keys
+
+' Change KeyMap
+
+If KeyHit(KEY_F5)
+		KeyMap+=1
+		If KeyMap>1 Then KeyMap=0
+Endif
+
+' Mute
+If KeyHit(KEY_F9) Or ButtonZone_Small(306,0,scl,0)
+	ChanMute01+=1
+		If ChanMute01>1 Then ChanMute01=0
+		'If ChanMute01=1 Then MikmodMute(0)
+	'If ChanMute01=0 Then MikmodUnmute(0)
+Endif
+If KeyHit(KEY_F10) Or ButtonZone_Small(306,11,scl,0)
+	ChanMute02+=1
+		If ChanMute02>1 Then ChanMute02=0
+		'If ChanMute02=1 Then MikmodMute(1)
+	'If ChanMute02=0 Then MikmodUnmute(1)
+Endif
+If KeyHit(KEY_F11) Or ButtonZone_Small(306,22,scl,0)
+	ChanMute03+=1
+		If ChanMute03>1 Then ChanMute03=0
+		'If ChanMute03=1 Then MikmodMute(2)
+	'If ChanMute03=0 Then MikmodUnmute(2)
+Endif
+If KeyHit(KEY_F12) Or ButtonZone_Small(306,33,scl,0)
+	ChanMute04+=1
+		If ChanMute04>1 Then ChanMute04=0
+		'If ChanMute04=1 Then MikmodMute(3)
+	'If ChanMute04=0 Then MikmodUnmute(3)
+Endif
+
+' About Screen
+If ButtonZone_Small(306,44,scl,0) And SDisplay=0
+	About+=1
+	If About>1 Then About=0
+Endif
+
+' Stereo Seperation
+If KeyHit(KEY_F4) ' Set Stereoseperation
+StereoSeperation+=1
+If StereoSeperation>2 Then StereoSeperation=0
+	If StereoSeperation=0
+		SetChannelPan(0,0)
+		SetChannelPan(1,0)
+		SetChannelPan(2,0)
+		SetChannelPan(3,0)
+	Endif
+	If StereoSeperation=1
+		SetChannelPan(0,-0.125)
+		SetChannelPan(1,0.125)
+		SetChannelPan(2,0.125)
+		SetChannelPan(3,-0.125)
+	Endif
+	If StereoSeperation=2
+		SetChannelPan(0,-1)
+		SetChannelPan(1,1)
+		SetChannelPan(2,1)
+		SetChannelPan(3,-1)
+	Endif
+Endif
+
+' Spectra Analyzer
+If MX>Border*2+120*scl And MX<Border*2+(306*scl) And MY>Border*2+44*scl And MY<Border*2+99*scl And MouseHit(MOUSE_LEFT) And SDisplay=0 And About=0 Then DisplaySpectra+=1
+If DisplaySpectra>1 Then DisplaySpectra=0
+
+' ---------------------- Small Buttons
+' Finetune
+If ButtonZone_Small(98,33,scl,1)
+	finetune[CurrentInst]+=1
+	If finetune[CurrentInst]>7 And switcher=0 Then finetune[CurrentInst]=7
+	
+	If finetune[CurrentInst]=16 And switcher=1
+	finetune[CurrentInst]=0
+	switcher=0
+	Endif
+
+Endif
+
+If ButtonZone_Small(109,33,scl,1)
+	finetune[CurrentInst]-=1
+	If finetune[CurrentInst]<8 And switcher=1 Then finetune[CurrentInst]=8
+		
+	If finetune[CurrentInst]=-1 And switcher=0
+	finetune[CurrentInst]=15
+	switcher=1
+	Endif
+	
+Endif
+' Position
+If ButtonZone_Small(98,0,scl,1) And ppos<Songlength-1
+	ppos+=1
+	'tpos=0
+	StopMod()
+Endif
+If ButtonZone_Small(109,0,scl,1) And ppos>0
+	ppos-=1
+	'tpos=0
+	StopMod()
+Endif
+
+' Insert Pattern
+If ButtonZone_Small(40,0,scl,0) And Songlength<127
+	For Local i=0 To 255-ppos ' 127 max
+		patterns[255-i]=patterns[255-(i+1)]
+		If i=255-ppos Then patterns[255-i]=0 ' Insert a zero pattern
+	Next
+	Songlength+=1
+Endif
+' Delete Pattern
+If ButtonZone_Small(54,0,scl,0) And Songlength>1
+	For Local i=ppos To 255 ' 127 max
+		patterns[i]=patterns[i+1]
+	Next
+	Songlength-=1
+Endif
+' Patterns
+If ButtonZone_Small(98,11,scl,1) And patterns[ppos]<99 Then patterns[ppos]+=1
+If ButtonZone_Small(109,11,scl,1) And patterns[ppos]>0 Then patterns[ppos]-=1
+' Songlength
+If ButtonZone_Small(98,22,scl,1) And Songlength<127 Then Songlength+=1
+If ButtonZone_Small(109,22,scl,1) And Songlength>1 Then Songlength-=1
+' Select Sample
+If ButtonZone_Small(98,44,scl,1) And CurrentInst<31
+	'StopAll()
+	StopChannel(CurrentT+4)
+	Sample_Looped_Trigger=0
+	CurrentInst+=1
+endif
+If ButtonZone_Small(109,44,scl,1) And CurrentInst>1
+	'StopAll()
+	StopChannel(CurrentT+4)
+	Sample_Looped_Trigger=0
+	CurrentInst-=1
+endif
+' Sample Volume
+If ButtonZone_Small(98,55,scl,1) And samplevolume[CurrentInst]<64 Then samplevolume[CurrentInst]+=1
+If ButtonZone_Small(109,55,scl,1) And samplevolume[CurrentInst]>0 Then samplevolume[CurrentInst]-=1
+' Sample Length
+If ButtonZone_Small(98,66,scl,1) And samplelength[CurrentInst]<65536-MouseDown(MOUSE_RIGHT)*15 
+	samplelength[CurrentInst]+=1+MouseDown(MOUSE_RIGHT)*15
+	LoadBackSamples() ' Reload Samples
+endif
+If ButtonZone_Small(109,66,scl,1) And samplelength[CurrentInst]>0+MouseDown(MOUSE_RIGHT)*15
+	samplelength[CurrentInst]-=1+MouseDown(MOUSE_RIGHT)*15
+	LoadBackSamples() ' Reload Samples
+endif
+' Sample Repeat
+If ButtonZone_Small(98,77,scl,1) And samplerepeat[CurrentInst]<samplelength[CurrentInst]-MouseDown(MOUSE_RIGHT)*15 And samplereplen[CurrentInst]<samplelength[CurrentInst]-samplerepeat[CurrentInst]-MouseDown(MOUSE_RIGHT)*15 And samplerepeat[CurrentInst]<samplereplen[CurrentInst]-MouseDown(MOUSE_RIGHT)*15
+	samplerepeat[CurrentInst]+=1+MouseDown(MOUSE_RIGHT)*15
+	LoadBackSamples() ' Reload Samples
+endif
+If ButtonZone_Small(109,77,scl,1) And samplerepeat[CurrentInst]>0+MouseDown(MOUSE_RIGHT)*15
+	samplerepeat[CurrentInst]-=1+MouseDown(MOUSE_RIGHT)*15
+	LoadBackSamples() ' Reload Samples
+endif
+' Sample Replen
+If ButtonZone_Small(98,88,scl,1) And samplereplen[CurrentInst]<samplelength[CurrentInst]-samplerepeat[CurrentInst]-MouseDown(MOUSE_RIGHT)*15
+	samplereplen[CurrentInst]+=1+MouseDown(MOUSE_RIGHT)*15
+	LoadBackSamples() ' Reload Samples
+endif
+If ButtonZone_Small(109,88,scl,1) And samplereplen[CurrentInst]>2+MouseDown(MOUSE_RIGHT)*15
+	samplereplen[CurrentInst]-=1+MouseDown(MOUSE_RIGHT)*15
+	LoadBackSamples() ' Reload Samples
+endif
+'----------------------------------------------------
+
+' Home
+If ButtonZone_Big(182,11,scl)
+	StopAll()' Stop All Sounds
+	framecount=0
+	tpos=0
+	ppos=0
+	PlayMode=0
+	Info="ALL RIGHT"	
+Endif
+
+'Stop Button
+If ButtonZone_Big(182,0,scl)
+	StopMod()
+	Info="ALL RIGHT"
+endif
+
+' Play at Song Position
+If KeyHit(KEY_CONTROL) Or ButtonZone_Big(120,0,scl)' Or ButtonZone_Big(120,11,scl)
+	StopAll()' Stop All Sounds
+	framecount=0
+	tpos=0
+	EditMode=0
+	PlayMode=1
+	PatternPlay=0
+	Trigger=1	
+	'PlayMod()
+	Info="ALL RIGHT"	
+Endif
+
+' Play Pattern only
+If ButtonZone_Big(120,11,scl)
+	StopAll()' Stop All Sounds
+	framecount=0
+	tpos=0
+	EditMode=0
+	PlayMode=1
+	PatternPlay=1
+	Trigger=1	
+	'PlayMod()
+	Info="ALL RIGHT"	
+Endif
+
+' Record Song
+If ButtonZone_Big(120,33,scl)
+	StopAll()' Stop All Sounds
+	framecount=0
+	tpos=0
+	EditMode=1
+	PlayMode=1
+	RecordSong=1
+	PatternPlay=0
+	Trigger=1
+	'PlayMod()	
+Endif
+
+'-------------
+
+' Octave Switch
+If KeyHit(KEY_F1)
+	octave=-12
+Endif
+If KeyHit(KEY_F2)
+	octave=0
+endif
+
+'--------------
+
+' Instrument up/down
+'If k=43 And TINPUT=0 And TINPUT2=0
+'StopAll()' Stop All Sounds
+	'If CurrentInst<31 Then CurrentInst+=1
+'Endif
+'If k=45 And TINPUT=0 And TINPUT2=0
+'StopAll()' Stop All Sounds
+	'If CurrentInst>1 Then CurrentInst-=1
+'Endif
+
+' Mark and Copy/Paste Block
+	BlockCopy()
+'''''''''''''''''''''''''''''
+
+' ------------------------------------------ Navigation
+If PlayMode=0 ' NotPlaying
+
+	If KeyHit(KEY_DOWN)
+	KeyTime=0
+		tpos+=1
+		If tpos>63 Then tpos=0
+	Endif
+
+	If KeyHit(KEY_UP)
+	KeyTime=0
+		tpos-=1
+		If tpos<0 Then tpos=63
+	Endif
+
+	If KeyDown(KEY_DOWN) Then KeyTime+=1
+	If KeyTime>12 And KeyDown(KEY_DOWN)
+		tpos+=1
+		If tpos>63 Then tpos=0
+		KeyTime=8
+	Endif
+
+	If KeyDown(KEY_UP) Then KeyTime+=1
+	If KeyTime>12 And KeyDown(KEY_UP)
+		tpos-=1
+		If tpos<0 Then tpos=63
+		KeyTime=8
+	Endif
+	
+Endif
+
+' MouseRoll Up/Down
+If MZ=1 And PlayMode=0
+	tpos-=1
+	If tpos<0 Then tpos=63
+Endif
+If MZ=-1 And PlayMode=0
+	tpos+=1
+	If tpos>63 Then tpos=0
+endif
+
+' Key Home & end
+If KeyHit(KEY_HOME) Then tpos=0
+If KeyHit(KEY_END) Then tpos=63
+
+' Key Pos Jump
+If KeyHit(KEY_PAGEDOWN) And tpos<63
+	tpos+=16
+	If tpos>63 Then tpos=63
+endif
+If KeyHit(KEY_PAGEUP) And tpos>0
+	tpos-=16
+	If tpos<0 Then tpos=0
+Endif
+
+' EditMode
+If KeyHit(KEY_SPACE) And TINPUT=0 And TINPUT2=0 Or ButtonZone_Big(120,22,scl) And TINPUT=0 And TINPUT2=0
+If PlayMode=1
+		StopAll()' Stop All Sounds
+		PlayMode=0
+		RecordSong=0
+Else
+		StopAll()' Stop All Sounds
+		EditMode+=1' Enable Edit
+		If EditMode>1 Then EditMode=0
+		If EditMode=0 Then Info="ALL RIGHT"
+		If EditMode=1 Then Info="EDIT MODE..."
+endif
+Endif
+
+
+'-------------
+'Cursor switch
+If KeyHit(KEY_RIGHT)
+	If CursorPos=0 Then CursorPos+=16
+	If CursorPos>0 Then CursorPos+=8
+	KeyTime=0
+endif
+If KeyDown(KEY_RIGHT) Then KeyTime+=1
+If KeyTime>12 And KeyDown(KEY_RIGHT)
+	If CursorPos=0 Then CursorPos+=16
+	If CursorPos>0 Then CursorPos+=8
+	KeyTime=8
+endif
+
+If KeyHit(KEY_LEFT)
+	If CursorPos=0 Then CursorPos-=8
+	If CursorPos>16 Then CursorPos-=8
+	If CursorPos=16 Then CursorPos-=16
+	KeyTime=0
+endif
+If KeyDown(KEY_LEFT) Then KeyTime+=1
+If KeyTime>12 And KeyDown(KEY_LEFT)
+	If CursorPos=0 Then CursorPos-=8
+	If CursorPos>16 Then CursorPos-=8
+	If CursorPos=16 Then CursorPos-=16
+	KeyTime=8
+endif
+
+If KeyHit(KEY_TAB) Then CurrentTrack+=9*8
+
+If CursorPos>56 Then CurrentTrack+=9*8
+If CursorPos<0 Then CurrentTrack-=9*8
+
+If CurrentTrack>216 Then CurrentTrack=0
+If CurrentTrack<0 Then CurrentTrack=216
+
+If CursorPos>56 Then CursorPos=0
+If CursorPos<0 Then CursorPos=56
+'--------------------------------------------------------
+
+' Transpose Notes on Track
+If PlayMode=0
+Local pospointer:Int=patterns[ppos]*64
+If k=43 And CurrentT=0
+	For Local i=0 To 63
+		If tracks01[i+pospointer]>0 Then tracks01[i+pospointer]=tracks01[i+pospointer]+1
+	Next
+Endif
+If k=43 And CurrentT=1
+	For Local i=0 To 63
+		If tracks02[i+pospointer]>0 Then tracks02[i+pospointer]=tracks02[i+pospointer]+1
+	Next
+Endif
+If k=43 And CurrentT=2
+	For Local i=0 To 63
+		If tracks03[i+pospointer]>0 Then tracks03[i+pospointer]=tracks03[i+pospointer]+1
+	Next
+Endif
+If k=43 And CurrentT=3
+	For Local i=0 To 63
+		If tracks04[i+pospointer]>0 Then tracks04[i+pospointer]=tracks04[i+pospointer]+1
+	Next
+Endif
+' Minus
+If k=45 And CurrentT=0
+	For Local i=0 To 63
+		If tracks01[i+pospointer]>0 Then tracks01[i+pospointer]=tracks01[i+pospointer]-1
+	Next
+Endif
+If k=45 And CurrentT=1
+	For Local i=0 To 63
+		If tracks02[i+pospointer]>0 Then tracks02[i+pospointer]=tracks02[i+pospointer]-1
+	Next
+Endif
+If k=45 And CurrentT=2
+	For Local i=0 To 63
+		If tracks03[i+pospointer]>0 Then tracks03[i+pospointer]=tracks03[i+pospointer]-1
+	Next
+Endif
+If k=45 And CurrentT=3
+	For Local i=0 To 63
+		If tracks04[i+pospointer]>0 Then tracks04[i+pospointer]=tracks04[i+pospointer]-1
+	Next
+Endif
+Endif
+
+' Sample Display MiniSampler
+If KeyHit(KEY_F6) Or ButtonZone_Big(244,33,scl)
+	About=0
+	SDisplay+=1
+	If SDisplay>1 Then SDisplay=0
+Endif
+
+' KeyJazzing
+If KeyJazzing(k)>0 And TINPUT=0 And TINPUT2=0 And CursorPos=0
+Sample_Looped_Trigger=1
+    SetChannelRate( CurrentT+4, ( ( 7159090.0 / (2 * PeriodTable[ (48-(KeyJazzing(k)+24+octave))+finetune[CurrentInst]*36 ] ) / 8400.00 ) ) )
+		
+		' Makes sure it does not playing the entire sample first
+		If samplereplen[CurrentInst]<samplelength[CurrentInst] And samplereplen[CurrentInst]>2 And samplerepeat[CurrentInst]=0
+			PlaySound(Samples_looped[CurrentInst],CurrentT+4,1)
+		Else
+			PlaySound(Samples[CurrentInst],CurrentT+4,0)' If samplereplen=samplelen
+		endif
+	
+	SetChannelVolume(CurrentT+4,(0.5/64)*samplevolume[CurrentInst])
+	' For Sample Display Pointer
+	PJazz=(KeyJazzing(k)-1)+octave
+	If PlayMode=0 Then PScroll=0
+	'---------------------------
+Endif
+	If Not ChannelState(CurrentT+4) And Sample_Looped_Trigger=1
+	PlaySound(Samples_looped[CurrentInst],CurrentT+4,1)
+	Sample_Looped_Trigger=0
+	Endif
+'-----------
+
+End
+
+Method BlockCopy()
+
+' Mark Block ----------------------------------
+If KeyHit(KEY_SHIFT)
+	StartBlock=tpos
+	Mark=1
+endif
+If KeyDown(KEY_SHIFT) Then EndBlock=tpos
+' Copy Block
+If KeyHit(KEY_F7)
+
+	CopyBlockLength=EndBlock-StartBlock ' Store Length of Block
+	CopyStartPos=StartBlock ' Store Start Position of Block
+	
+	For Local i=0 To CopyBlockLength	
+		If CurrentT=0
+			copy_tracks[i]=tracks01[(patterns[ppos]*64)+CopyStartPos+i]
+			copy_tracks_inst[i]=tracks_inst01[(patterns[ppos]*64)+CopyStartPos+i]
+			copy_tracks_fx[i]=tracks_fx01[(patterns[ppos]*64)+CopyStartPos+i]
+			copy_tracks_fx2[i]=tracks_fx201[(patterns[ppos]*64)+CopyStartPos+i]
+		Endif		
+		If CurrentT=1
+			copy_tracks[i]=tracks02[(patterns[ppos]*64)+CopyStartPos+i]
+			copy_tracks_inst[i]=tracks_inst02[(patterns[ppos]*64)+CopyStartPos+i]
+			copy_tracks_fx[i]=tracks_fx02[(patterns[ppos]*64)+CopyStartPos+i]
+			copy_tracks_fx2[i]=tracks_fx202[(patterns[ppos]*64)+CopyStartPos+i]
+		Endif		
+		If CurrentT=2
+			copy_tracks[i]=tracks03[(patterns[ppos]*64)+CopyStartPos+i]
+			copy_tracks_inst[i]=tracks_inst03[(patterns[ppos]*64)+CopyStartPos+i]
+			copy_tracks_fx[i]=tracks_fx03[(patterns[ppos]*64)+CopyStartPos+i]
+			copy_tracks_fx2[i]=tracks_fx203[(patterns[ppos]*64)+CopyStartPos+i]
+		Endif		
+		If CurrentT=3
+			copy_tracks[i]=tracks04[(patterns[ppos]*64)+CopyStartPos+i]
+			copy_tracks_inst[i]=tracks_inst04[(patterns[ppos]*64)+CopyStartPos+i]
+			copy_tracks_fx[i]=tracks_fx04[(patterns[ppos]*64)+CopyStartPos+i]
+			copy_tracks_fx2[i]=tracks_fx204[(patterns[ppos]*64)+CopyStartPos+i]
+		Endif		
+	Next
+	Mark=0 ' Reset Remove visible Mark
+	Info="BLOCK COPIED..."
+Endif
+
+' Paste Block
+If KeyHit(KEY_F8)
+	For Local i=0 To CopyBlockLength
+	
+		If CurrentT=0 And tpos+i<64
+			tracks01[(patterns[ppos]*64)+tpos+i]=copy_tracks[i]
+			tracks_inst01[(patterns[ppos]*64)+tpos+i]=copy_tracks_inst[i]
+			tracks_fx01[(patterns[ppos]*64)+tpos+i]=copy_tracks_fx[i]
+			tracks_fx201[(patterns[ppos]*64)+tpos+i]=copy_tracks_fx2[i]
+		Endif
+		If CurrentT=1 And tpos+i<64
+			tracks02[(patterns[ppos]*64)+tpos+i]=copy_tracks[i]
+			tracks_inst02[(patterns[ppos]*64)+tpos+i]=copy_tracks_inst[i]
+			tracks_fx02[(patterns[ppos]*64)+tpos+i]=copy_tracks_fx[i]
+			tracks_fx202[(patterns[ppos]*64)+tpos+i]=copy_tracks_fx2[i]
+		Endif		
+		If CurrentT=2 And tpos+i<64
+			tracks03[(patterns[ppos]*64)+tpos+i]=copy_tracks[i]
+			tracks_inst03[(patterns[ppos]*64)+tpos+i]=copy_tracks_inst[i]
+			tracks_fx03[(patterns[ppos]*64)+tpos+i]=copy_tracks_fx[i]
+			tracks_fx203[(patterns[ppos]*64)+tpos+i]=copy_tracks_fx2[i]
+		Endif		
+		If CurrentT=3 And tpos+i<64
+			tracks04[(patterns[ppos]*64)+tpos+i]=copy_tracks[i]
+			tracks_inst04[(patterns[ppos]*64)+tpos+i]=copy_tracks_inst[i]
+			tracks_fx04[(patterns[ppos]*64)+tpos+i]=copy_tracks_fx[i]
+			tracks_fx204[(patterns[ppos]*64)+tpos+i]=copy_tracks_fx2[i]
+		Endif	
+	Next
+	Info="BLOCK PASTED..."
+Endif
+'--------------------------------------------
+
+end
+
+' PlayMod
+Method PlayMod()
+
+StopAll()
+
+	'If PlayMode=1 'And LoadFileName
+		'SaveMod(os.CurrentDir()+"\data\modfiletemp.tmp",1)'LoadFileName[0..LoadFileName.Length-Filename.Length]+"modfile.tmp")
+		'MikmodPlay(os.CurrentDir()+"\data\modfiletemp.tmp")'LoadFileName[0..LoadFileName.Length-Filename.Length]+"modfile.tmp")
+	'endif
+	
+	'MikmodSetSpeed(speed)
+	'MikmodSetPosition(ppos)
+	
+		' Set Mutes again
+	'If ChanMute01=1 Then MikmodMute(0)
+	'If ChanMute02=1 Then MikmodMute(1)
+	'If ChanMute03=1 Then MikmodMute(2)
+	'If ChanMute04=1 Then MikmodMute(3)
+	
+End
+
+'StopMod
+Method StopMod()
+	StopAll()' Stop All Sounds
+	PlayMode=0
+	EditMode=0
+	RecordSong=0 ' Stop Record
+	PatternPlay=0
+End
+
+Method KeyJazzing:Int(k:Int)
+
+	Local g:String=String.FromChar(k)
+	
+	If g="y" And KeyMap=1 Then Return 1
+	If g="y" And KeyMap=0 Then Return 22
+	If g="s" Then Return 2
+	If g="x" Then Return 3
+	If g="d" Then Return 4
+	If g="c" Then Return 5
+	If g="v" Then Return 6
+	If g="g" Then Return 7
+	If g="b" Then Return 8
+	If g="h" Then Return 9
+	If g="n" Then Return 10
+	If g="j" Then Return 11
+	If g="m" Then Return 12
+	
+	If g="," Then Return 13
+	If g="l" Then Return 14
+	If g="." Then Return 15
+	If g="ö" Then Return 16
+	'If g="-" Then Return 17
+			
+	If g="q" Then Return 13
+	If g="2" Then Return 14
+	If g="w" Then Return 15
+	If g="3" Then Return 16
+	If g="e" Then Return 17
+	If g="r" Then Return 18
+	If g="5" Then Return 19
+	If g="t" Then Return 20
+	If g="6" Then Return 21
+	If g="z" And KeyMap=1 Then Return 22
+	If g="z" And KeyMap=0 Then Return 1
+	If g="7" Then Return 23
+	If g="u" Then Return 24
+	
+	Return 0
+	
+End
+
+Method EditSong:Int(k:Int)
+
+'--------- More Edit
+If EditMode=1
+
+If KeyJazzing(k)>0 And CursorPos=0' Cursor is on the Note Track
+	
+	' Edit Notes
+	If CurrentT=0
+		tracks01[tpos+(patterns[ppos]*64)]=24+KeyJazzing(k)+octave
+		tracks_inst01[tpos+(patterns[ppos]*64)]=CurrentInst
+	endif
+	If CurrentT=1
+		tracks02[tpos+(patterns[ppos]*64)]=24+KeyJazzing(k)+octave
+		tracks_inst02[tpos+(patterns[ppos]*64)]=CurrentInst
+	endif
+	If CurrentT=2
+		tracks03[tpos+(patterns[ppos]*64)]=24+KeyJazzing(k)+octave
+		tracks_inst03[tpos+(patterns[ppos]*64)]=CurrentInst
+	endif
+	If CurrentT=3
+		tracks04[tpos+(patterns[ppos]*64)]=24+KeyJazzing(k)+octave
+		tracks_inst04[tpos+(patterns[ppos]*64)]=CurrentInst
+	endif
+
+	' set tpos
+	If RecordSong=0
+	tpos+=1
+	If tpos>63 Then tpos=0
+	Endif
+	
+Endif
+
+	' Del
+	If KeyHit(KEY_DELETE) And CurrentT=0 And CursorPos=0
+		KeyTime=0
+		tracks01[tpos+(patterns[ppos]*64)]=0
+		tracks_inst01[tpos+(patterns[ppos]*64)]=0
+			' set tpos
+			If RecordSong=0
+			tpos+=1
+			If tpos>63 Then tpos=0
+			endif
+	Endif
+	If KeyDown(KEY_DELETE) And CurrentT=0 And CursorPos=0 Then KeyTime+=1
+	If KeyTime>12 And KeyDown(KEY_DELETE) And CurrentT=0 And CursorPos=0
+		tracks01[tpos+(patterns[ppos]*64)]=0
+		tracks_inst01[tpos+(patterns[ppos]*64)]=0
+			' set tpos
+			If RecordSong=0
+			tpos+=1
+			If tpos>63 Then tpos=0
+			endif
+		KeyTime=8
+	Endif 
+	If KeyHit(KEY_DELETE) And CurrentT=1 And CursorPos=0
+		KeyTime=0
+		tracks02[tpos+(patterns[ppos]*64)]=0
+		tracks_inst02[tpos+(patterns[ppos]*64)]=0
+			' set tpos
+			If RecordSong=0
+			tpos+=1
+			If tpos>63 Then tpos=0
+			endif	
+	Endif
+	If KeyDown(KEY_DELETE) And CurrentT=1 And CursorPos=0 Then KeyTime+=1
+	If KeyTime>12 And KeyDown(KEY_DELETE) And CurrentT=1 And CursorPos=0
+		tracks02[tpos+(patterns[ppos]*64)]=0
+		tracks_inst02[tpos+(patterns[ppos]*64)]=0
+			' set tpos
+			If RecordSong=0
+			tpos+=1
+			If tpos>63 Then tpos=0
+			endif
+		KeyTime=8
+	Endif  
+	If KeyHit(KEY_DELETE) And CurrentT=2 And CursorPos=0
+		KeyTime=0
+		tracks03[tpos+(patterns[ppos]*64)]=0
+		tracks_inst03[tpos+(patterns[ppos]*64)]=0
+			' set tpos
+			If RecordSong=0
+			tpos+=1
+			If tpos>63 Then tpos=0
+			endif
+	Endif
+	If KeyDown(KEY_DELETE) And CurrentT=2 And CursorPos=0 Then KeyTime+=1
+	If KeyTime>12 And KeyDown(KEY_DELETE) And CurrentT=2 And CursorPos=0
+		tracks03[tpos+(patterns[ppos]*64)]=0
+		tracks_inst03[tpos+(patterns[ppos]*64)]=0
+			' set tpos
+			If RecordSong=0
+			tpos+=1
+			If tpos>63 Then tpos=0
+			endif
+		KeyTime=8
+	Endif  
+	If KeyHit(KEY_DELETE) And CurrentT=3 And CursorPos=0
+		KeyTime=0
+		tracks04[tpos+(patterns[ppos]*64)]=0
+		tracks_inst04[tpos+(patterns[ppos]*64)]=0
+			' set tpos
+			If RecordSong=0
+			tpos+=1
+			If tpos>63 Then tpos=0
+			endif
+	Endif
+	If KeyDown(KEY_DELETE) And CurrentT=3 And CursorPos=0 Then KeyTime+=1
+	If KeyTime>12 And KeyDown(KEY_DELETE) And CurrentT=3 And CursorPos=0
+		tracks04[tpos+(patterns[ppos]*64)]=0
+		tracks_inst04[tpos+(patterns[ppos]*64)]=0
+			' set tpos
+			If RecordSong=0
+			tpos+=1
+			If tpos>63 Then tpos=0
+			endif
+		KeyTime=8
+	Endif 
+	
+	
+	' Edit Inst2 Digit
+	If Hex2Int(String.FromChar(k)) And CursorPos=32 And CurrentT=0 Or k=48 And CursorPos=32 And CurrentT=0
+		tracks_inst01[tpos+(patterns[ppos]*64)]=Hex2Int(String.FromChar(k)) + (tracks_inst01[tpos+(patterns[ppos]*64)]/16)*16 
+			' set tpos
+			If RecordSong=0
+			tpos+=1
+			If tpos>63 Then tpos=0
+			endif
+	Endif
+	If Hex2Int(String.FromChar(k)) and CursorPos=32 And CurrentT=1 Or k=48 And CursorPos=32 And CurrentT=1
+		tracks_inst02[tpos+(patterns[ppos]*64)]=Hex2Int(String.FromChar(k)) + (tracks_inst02[tpos+(patterns[ppos]*64)]/16)*16 
+			' set tpos
+			If RecordSong=0
+			tpos+=1
+			If tpos>63 Then tpos=0
+			endif
+	Endif
+	If Hex2Int(String.FromChar(k)) and CursorPos=32 And CurrentT=2 Or k=48 And CursorPos=32 And CurrentT=2
+		tracks_inst03[tpos+(patterns[ppos]*64)]=Hex2Int(String.FromChar(k)) + (tracks_inst03[tpos+(patterns[ppos]*64)]/16)*16 
+			' set tpos
+			If RecordSong=0
+			tpos+=1
+			If tpos>63 Then tpos=0
+			endif
+	Endif
+	If Hex2Int(String.FromChar(k)) And CursorPos=32 And CurrentT=3 Or k=48 And CursorPos=32 And CurrentT=3
+		tracks_inst04[tpos+(patterns[ppos]*64)]=Hex2Int(String.FromChar(k)) + (tracks_inst04[tpos+(patterns[ppos]*64)]/16)*16 
+			' set tpos
+			If RecordSong=0
+			tpos+=1
+			If tpos>63 Then tpos=0
+			endif
+	endif
+	
+	' Edit Inst1 Digit
+	If String.FromChar(k)="1" And CursorPos=24 And CurrentT=0 Or k=48 And CursorPos=24 And CurrentT=0
+		tracks_inst01[tpos+(patterns[ppos]*64)]=Hex2Int(String.FromChar(k))*16 + (tracks_inst01[tpos+(patterns[ppos]*64)]-(tracks_inst01[tpos+(patterns[ppos]*64)]/16)*16)
+			' set tpos
+			If RecordSong=0
+			tpos+=1
+			If tpos>63 Then tpos=0
+			endif
+	Endif
+	If String.FromChar(k)="1" and CursorPos=24 And CurrentT=1 Or k=48 And CursorPos=24 And CurrentT=1
+		tracks_inst02[tpos+(patterns[ppos]*64)]=Hex2Int(String.FromChar(k))*16 + (tracks_inst02[tpos+(patterns[ppos]*64)]-(tracks_inst02[tpos+(patterns[ppos]*64)]/16)*16)
+			' set tpos
+			If RecordSong=0
+			tpos+=1
+			If tpos>63 Then tpos=0
+			endif
+	Endif
+	If String.FromChar(k)="1" and CursorPos=24 And CurrentT=2 Or k=48 And CursorPos=24 And CurrentT=2
+		tracks_inst03[tpos+(patterns[ppos]*64)]=Hex2Int(String.FromChar(k))*16 + (tracks_inst03[tpos+(patterns[ppos]*64)]-(tracks_inst03[tpos+(patterns[ppos]*64)]/16)*16)
+			' set tpos
+			If RecordSong=0
+			tpos+=1
+			If tpos>63 Then tpos=0
+			endif
+	Endif
+	If String.FromChar(k)="1" And CursorPos=24 And CurrentT=3 Or k=48 And CursorPos=24 And CurrentT=3
+		tracks_inst04[tpos+(patterns[ppos]*64)]=Hex2Int(String.FromChar(k))*16 + (tracks_inst04[tpos+(patterns[ppos]*64)]-(tracks_inst04[tpos+(patterns[ppos]*64)]/16)*16)
+			' set tpos
+			tpos+=1
+			If tpos>63 Then tpos=0
+	endif	
+		
+	' Edit fx1
+	If Hex2Int(String.FromChar(k)) And CursorPos=40 And CurrentT=0 Or k=48 And CursorPos=40 And CurrentT=0
+		tracks_fx01[tpos+(patterns[ppos]*64)]=Hex2Int(String.FromChar(k))
+			' set tpos
+			If RecordSong=0
+			tpos+=1
+			If tpos>63 Then tpos=0
+			endif
+	Endif
+	If Hex2Int(String.FromChar(k)) and CursorPos=40 And CurrentT=1 Or k=48 And CursorPos=40 And CurrentT=1
+		tracks_fx02[tpos+(patterns[ppos]*64)]=Hex2Int(String.FromChar(k))
+			' set tpos
+			If RecordSong=0
+			tpos+=1
+			If tpos>63 Then tpos=0
+			endif
+	Endif
+	If Hex2Int(String.FromChar(k)) and CursorPos=40 And CurrentT=2 Or k=48 And CursorPos=40 And CurrentT=2
+		tracks_fx03[tpos+(patterns[ppos]*64)]=Hex2Int(String.FromChar(k))
+			' set tpos
+			If RecordSong=0
+			tpos+=1
+			If tpos>63 Then tpos=0
+			endif
+	Endif
+	If Hex2Int(String.FromChar(k)) And CursorPos=40 And CurrentT=3 Or k=48 And CursorPos=40 And CurrentT=3
+		tracks_fx04[tpos+(patterns[ppos]*64)]=Hex2Int(String.FromChar(k))
+			' set tpos
+			If RecordSong=0
+			tpos+=1
+			If tpos>63 Then tpos=0
+			endif
+	Endif
+		
+	' Edit fx2-1
+	If Hex2Int(String.FromChar(k)) And CursorPos=48 And CurrentT=0 Or k=48 And CursorPos=48 And CurrentT=0
+		tracks_fx201[tpos+(patterns[ppos]*64)]=Hex2Int(String.FromChar(k))*16 + (tracks_fx201[tpos+(patterns[ppos]*64)]-(tracks_fx201[tpos+(patterns[ppos]*64)]/16)*16) 
+			' set tpos
+			If RecordSong=0
+			tpos+=1
+			If tpos>63 Then tpos=0
+			endif
+	Endif
+	If Hex2Int(String.FromChar(k)) And CursorPos=48 And CurrentT=1 Or k=48 And CursorPos=48 And CurrentT=1
+		tracks_fx202[tpos+(patterns[ppos]*64)]=Hex2Int(String.FromChar(k))*16 + (tracks_fx202[tpos+(patterns[ppos]*64)]-(tracks_fx202[tpos+(patterns[ppos]*64)]/16)*16) 
+			' set tpos
+			If RecordSong=0
+			tpos+=1
+			If tpos>63 Then tpos=0
+			endif
+	Endif
+	If Hex2Int(String.FromChar(k)) And CursorPos=48 And CurrentT=2 Or k=48 And CursorPos=48 And CurrentT=2
+		tracks_fx203[tpos+(patterns[ppos]*64)]=Hex2Int(String.FromChar(k))*16 + (tracks_fx203[tpos+(patterns[ppos]*64)]-(tracks_fx203[tpos+(patterns[ppos]*64)]/16)*16) 
+			' set tpos
+			If RecordSong=0
+			tpos+=1
+			If tpos>63 Then tpos=0
+			endif
+	Endif
+	If Hex2Int(String.FromChar(k)) And CursorPos=48 And CurrentT=3 Or k=48 And CursorPos=48 And CurrentT=3
+		tracks_fx204[tpos+(patterns[ppos]*64)]=Hex2Int(String.FromChar(k))*16 + (tracks_fx204[tpos+(patterns[ppos]*64)]-(tracks_fx204[tpos+(patterns[ppos]*64)]/16)*16) 
+			' set tpos
+			If RecordSong=0
+			tpos+=1
+			If tpos>63 Then tpos=0
+			endif
+	Endif
+		
+	' Edit fx2-2
+	If Hex2Int(String.FromChar(k)) And CursorPos=56 And CurrentT=0 Or k=48 And CursorPos=56 And CurrentT=0
+		tracks_fx201[tpos+(patterns[ppos]*64)]=Hex2Int(String.FromChar(k)) + (tracks_fx201[tpos+(patterns[ppos]*64)]/16)*16 
+			' set tpos
+			If RecordSong=0
+			tpos+=1
+			If tpos>63 Then tpos=0
+			endif
+	Endif
+	If Hex2Int(String.FromChar(k)) and CursorPos=56 And CurrentT=1 Or k=48 And CursorPos=56 And CurrentT=1
+		tracks_fx202[tpos+(patterns[ppos]*64)]=Hex2Int(String.FromChar(k)) + (tracks_fx202[tpos+(patterns[ppos]*64)]/16)*16 
+			' set tpos
+			If RecordSong=0
+			tpos+=1
+			If tpos>63 Then tpos=0
+			endif
+	Endif
+	If Hex2Int(String.FromChar(k)) and CursorPos=56 And CurrentT=2 Or k=48 And CursorPos=56 And CurrentT=2
+		tracks_fx203[tpos+(patterns[ppos]*64)]=Hex2Int(String.FromChar(k)) + (tracks_fx203[tpos+(patterns[ppos]*64)]/16)*16 
+			' set tpos
+			If RecordSong=0
+			tpos+=1
+			If tpos>63 Then tpos=0
+			endif
+	Endif
+	If Hex2Int(String.FromChar(k)) And CursorPos=56 And CurrentT=3 Or k=48 And CursorPos=56 And CurrentT=3
+		tracks_fx204[tpos+(patterns[ppos]*64)]=Hex2Int(String.FromChar(k)) + (tracks_fx204[tpos+(patterns[ppos]*64)]/16)*16 
+			' set tpos
+			If RecordSong=0
+			tpos+=1
+			If tpos>63 Then tpos=0
+			endif
+	Endif
+	
+Endif
+'------------------
+
+End
+
+Method SlkModPlay()
+
+' Repeat
+If ppos=Songlength
+	ppos=0
+	tpos=0
+	'PlayMode=0
+	'StopMod()
+endif
+
+If framecount=speed
+
+' Set 50 Frame Trigger
+ Trigger=1
+ 
+	' Multiplier
+ 	dfx=2
+
+ 
+' Effects Notes Etc
+ArpVal01=0
+ArpVal02=0
+ArpVal03=0
+ArpVal04=0
+
+' EDx Sampletrigger Delay Reset
+EDTrigger01=0
+EDTrigger02=0
+EDTrigger03=0
+EDTrigger04=0
+
+' Get LastNote2GlideNote
+
+' Changed Oct-25
+If tracks01[tpos+(patterns[ppos]*64)] Then GlideNote01=LastNote01
+If tracks02[tpos+(patterns[ppos]*64)] Then GlideNote02=LastNote02
+If tracks03[tpos+(patterns[ppos]*64)] Then GlideNote03=LastNote03
+If tracks04[tpos+(patterns[ppos]*64)] Then GlideNote04=LastNote04
+
+' Reset Pitchval by Trigger
+If tracks01[tpos+(patterns[ppos]*64)] Then PitchVal01=0' Later Finetunesetting
+If tracks02[tpos+(patterns[ppos]*64)] Then PitchVal02=0
+If tracks03[tpos+(patterns[ppos]*64)] Then PitchVal03=0
+If tracks04[tpos+(patterns[ppos]*64)] Then PitchVal04=0
+
+If tracks01[tpos+(patterns[ppos]*64)] Then GlideVal01=0' Later Finetunesetting
+If tracks02[tpos+(patterns[ppos]*64)] Then GlideVal02=0
+If tracks03[tpos+(patterns[ppos]*64)] Then GlideVal03=0
+If tracks04[tpos+(patterns[ppos]*64)] Then GlideVal04=0
+
+' Set Volume back by trigger
+If tracks_inst01[tpos+(patterns[ppos]*64)] Then Volume01=samplevolume[tracks_inst01[tpos+(patterns[ppos]*64)]]'Normaly Samplevol
+If tracks_inst02[tpos+(patterns[ppos]*64)] Then Volume02=samplevolume[tracks_inst02[tpos+(patterns[ppos]*64)]]
+If tracks_inst03[tpos+(patterns[ppos]*64)] Then Volume03=samplevolume[tracks_inst03[tpos+(patterns[ppos]*64)]]
+If tracks_inst04[tpos+(patterns[ppos]*64)] Then Volume04=samplevolume[tracks_inst04[tpos+(patterns[ppos]*64)]]
+' For Vumeter
+If tracks_inst01[tpos+(patterns[ppos]*64)] Then VVolume01=samplevolume[tracks_inst01[tpos+(patterns[ppos]*64)]]'Normaly Samplevol
+If tracks_inst02[tpos+(patterns[ppos]*64)] Then VVolume02=samplevolume[tracks_inst02[tpos+(patterns[ppos]*64)]]
+If tracks_inst03[tpos+(patterns[ppos]*64)] Then VVolume03=samplevolume[tracks_inst03[tpos+(patterns[ppos]*64)]]
+If tracks_inst04[tpos+(patterns[ppos]*64)] Then VVolume04=samplevolume[tracks_inst04[tpos+(patterns[ppos]*64)]]
+
+' Set Speed FXX
+If tracks_fx01[tpos+(patterns[ppos]*64)]=15 And tracks_fx201[tpos+(patterns[ppos]*64)]<32 Then speed=tracks_fx201[tpos+(patterns[ppos]*64)]
+If tracks_fx02[tpos+(patterns[ppos]*64)]=15 And tracks_fx202[tpos+(patterns[ppos]*64)]<32 Then speed=tracks_fx202[tpos+(patterns[ppos]*64)]
+If tracks_fx03[tpos+(patterns[ppos]*64)]=15 And tracks_fx203[tpos+(patterns[ppos]*64)]<32 Then speed=tracks_fx203[tpos+(patterns[ppos]*64)]
+If tracks_fx04[tpos+(patterns[ppos]*64)]=15 And tracks_fx204[tpos+(patterns[ppos]*64)]<32 Then speed=tracks_fx204[tpos+(patterns[ppos]*64)]
+
+' Set 4xx
+If tracks_fx01[tpos+(patterns[ppos]*64)]=4 And tracks_fx201[tpos+(patterns[ppos]*64)]-(Int(tracks_fx201[tpos+(patterns[ppos]*64)]/16)*16)>0 Then Vibrato01_depth=tracks_fx201[tpos+(patterns[ppos]*64)]-(Int(tracks_fx201[tpos+(patterns[ppos]*64)]/16)*16)
+If tracks_fx02[tpos+(patterns[ppos]*64)]=4 And tracks_fx202[tpos+(patterns[ppos]*64)]-(Int(tracks_fx202[tpos+(patterns[ppos]*64)]/16)*16)>0 Then Vibrato02_depth=tracks_fx202[tpos+(patterns[ppos]*64)]-(Int(tracks_fx202[tpos+(patterns[ppos]*64)]/16)*16)
+If tracks_fx03[tpos+(patterns[ppos]*64)]=4 And tracks_fx203[tpos+(patterns[ppos]*64)]-(Int(tracks_fx203[tpos+(patterns[ppos]*64)]/16)*16)>0 Then Vibrato03_depth=tracks_fx203[tpos+(patterns[ppos]*64)]-(Int(tracks_fx203[tpos+(patterns[ppos]*64)]/16)*16)
+If tracks_fx04[tpos+(patterns[ppos]*64)]=4 And tracks_fx204[tpos+(patterns[ppos]*64)]-(Int(tracks_fx204[tpos+(patterns[ppos]*64)]/16)*16)>0 Then Vibrato04_depth=tracks_fx204[tpos+(patterns[ppos]*64)]-(Int(tracks_fx204[tpos+(patterns[ppos]*64)]/16)*16)
+
+If tracks_fx01[tpos+(patterns[ppos]*64)]=4 And Int(tracks_fx201[tpos+(patterns[ppos]*64)]/16)>0 Then Vibrato01_speed=Int(tracks_fx201[tpos+(patterns[ppos]*64)]/16)
+If tracks_fx02[tpos+(patterns[ppos]*64)]=4 And Int(tracks_fx202[tpos+(patterns[ppos]*64)]/16)>0 Then Vibrato02_speed=Int(tracks_fx202[tpos+(patterns[ppos]*64)]/16)
+If tracks_fx03[tpos+(patterns[ppos]*64)]=4 And Int(tracks_fx203[tpos+(patterns[ppos]*64)]/16)>0 Then Vibrato03_speed=Int(tracks_fx203[tpos+(patterns[ppos]*64)]/16)
+If tracks_fx04[tpos+(patterns[ppos]*64)]=4 And Int(tracks_fx204[tpos+(patterns[ppos]*64)]/16)>0 Then Vibrato04_speed=Int(tracks_fx204[tpos+(patterns[ppos]*64)]/16)
+
+' Set 3xx - Oct-25
+If tracks_fx01[tpos+(patterns[ppos]*64)]=3 And tracks_fx201[tpos+(patterns[ppos]*64)] > 0 Then GlideCount01=tracks_fx201[tpos+(patterns[ppos]*64)]*dfx
+If tracks_fx02[tpos+(patterns[ppos]*64)]=3 And tracks_fx202[tpos+(patterns[ppos]*64)] > 0 Then GlideCount02=tracks_fx202[tpos+(patterns[ppos]*64)]*dfx
+If tracks_fx03[tpos+(patterns[ppos]*64)]=3 And tracks_fx203[tpos+(patterns[ppos]*64)] > 0 Then GlideCount03=tracks_fx203[tpos+(patterns[ppos]*64)]*dfx
+If tracks_fx04[tpos+(patterns[ppos]*64)]=3 And tracks_fx204[tpos+(patterns[ppos]*64)] > 0 Then GlideCount04=tracks_fx204[tpos+(patterns[ppos]*64)]*dfx
+
+' EDx Sample Trigger Delay - Okt-25
+If tracks_fx01[tpos+(patterns[ppos]*64)]=14 And Int(tracks_fx201[tpos+(patterns[ppos]*64)]/16)=13 Then EDTrigger01=tracks_fx201[tpos+(patterns[ppos]*64)]-208
+If tracks_fx02[tpos+(patterns[ppos]*64)]=14 And Int(tracks_fx202[tpos+(patterns[ppos]*64)]/16)=13 Then EDTrigger02=tracks_fx202[tpos+(patterns[ppos]*64)]-208
+If tracks_fx03[tpos+(patterns[ppos]*64)]=14 And Int(tracks_fx203[tpos+(patterns[ppos]*64)]/16)=13 Then EDTrigger03=tracks_fx203[tpos+(patterns[ppos]*64)]-208
+If tracks_fx04[tpos+(patterns[ppos]*64)]=14 And Int(tracks_fx204[tpos+(patterns[ppos]*64)]/16)=13 Then EDTrigger04=tracks_fx204[tpos+(patterns[ppos]*64)]-208
+
+' Get CXX and set Volume
+If tracks_fx01[tpos+(patterns[ppos]*64)]=12 Then Volume01=tracks_fx201[tpos+(patterns[ppos]*64)]
+If tracks_fx02[tpos+(patterns[ppos]*64)]=12 Then Volume02=tracks_fx202[tpos+(patterns[ppos]*64)]
+If tracks_fx03[tpos+(patterns[ppos]*64)]=12 Then Volume03=tracks_fx203[tpos+(patterns[ppos]*64)]
+If tracks_fx04[tpos+(patterns[ppos]*64)]=12 Then Volume04=tracks_fx204[tpos+(patterns[ppos]*64)]
+' For Vumeter
+If tracks_fx01[tpos+(patterns[ppos]*64)]=12 Then VVolume01=tracks_fx201[tpos+(patterns[ppos]*64)]
+If tracks_fx02[tpos+(patterns[ppos]*64)]=12 Then VVolume02=tracks_fx202[tpos+(patterns[ppos]*64)]
+If tracks_fx03[tpos+(patterns[ppos]*64)]=12 Then VVolume03=tracks_fx203[tpos+(patterns[ppos]*64)]
+If tracks_fx04[tpos+(patterns[ppos]*64)]=12 Then VVolume04=tracks_fx204[tpos+(patterns[ppos]*64)]
+
+' Get last Inst
+If tracks_inst01[tpos+(patterns[ppos]*64)] Then LastInst01=tracks_inst01[tpos+(patterns[ppos]*64)]
+If tracks_inst02[tpos+(patterns[ppos]*64)] Then LastInst02=tracks_inst02[tpos+(patterns[ppos]*64)]
+If tracks_inst03[tpos+(patterns[ppos]*64)] Then LastInst03=tracks_inst03[tpos+(patterns[ppos]*64)]
+If tracks_inst04[tpos+(patterns[ppos]*64)] Then LastInst04=tracks_inst04[tpos+(patterns[ppos]*64)]
+
+' Get LastNote
+If tracks01[tpos+(patterns[ppos]*64)] Then LastNote01=tracks01[tpos+(patterns[ppos]*64)]
+If tracks02[tpos+(patterns[ppos]*64)] Then LastNote02=tracks02[tpos+(patterns[ppos]*64)]
+If tracks03[tpos+(patterns[ppos]*64)] Then LastNote03=tracks03[tpos+(patterns[ppos]*64)]
+If tracks04[tpos+(patterns[ppos]*64)] Then LastNote04=tracks04[tpos+(patterns[ppos]*64)]
+
+' --NEW PUT TO TRCKER Get LastFX01
+LastFX01=tracks_fx01[tpos+(patterns[ppos]*64)]
+LastFX02=tracks_fx02[tpos+(patterns[ppos]*64)]
+LastFX03=tracks_fx03[tpos+(patterns[ppos]*64)]
+LastFX04=tracks_fx04[tpos+(patterns[ppos]*64)]
+
+LastFX201=tracks_fx201[tpos+(patterns[ppos]*64)]
+LastFX202=tracks_fx202[tpos+(patterns[ppos]*64)]
+LastFX203=tracks_fx203[tpos+(patterns[ppos]*64)]
+LastFX204=tracks_fx204[tpos+(patterns[ppos]*64)]
+
+' Sample Play and Loop -!Changed 26.12 - Okt 25
+' Makes sure it does not playing the entire sample first
+If Not EDTrigger01 ' if not SampleTrigger EDX
+If tracks01[tpos+(patterns[ppos]*64)] And LastFX01<>3 And LastFX01<>5
+	If samplereplen[LastInst01]>2 And samplerepeat[LastInst01]
+		Sample_Looped_Trigger_01=1
+		PlaySound(Samples[LastInst01],0,0)
+	Endif
+	If samplereplen[LastInst01]=samplelength[LastInst01]
+		PlaySound(Samples[LastInst01],0,1)
+	Endif
+	If samplereplen[LastInst01]=2
+		Sample_Looped_Trigger_01=0
+		PlaySound(Samples[LastInst01],0,0)
+	Endif
+Endif
+endif
+
+If Not EDTrigger02
+If tracks02[tpos+(patterns[ppos]*64)] And LastFX02<>3 And LastFX02<>5
+	If samplereplen[LastInst02]>2 And samplerepeat[LastInst02]
+		Sample_Looped_Trigger_02=1
+		PlaySound(Samples[LastInst02],1,0)
+	Endif
+	If samplereplen[LastInst02]=samplelength[LastInst02]
+		PlaySound(Samples[LastInst02],1,1)
+	Endif
+	If samplereplen[LastInst02]=2
+		Sample_Looped_Trigger_02=0
+		PlaySound(Samples[LastInst02],1,0)
+	Endif
+Endif
+endif
+
+If Not EDTrigger03
+If tracks03[tpos+(patterns[ppos]*64)] And LastFX03<>3 And LastFX03<>5
+	If samplereplen[LastInst03]>2 And samplerepeat[LastInst03]
+		Sample_Looped_Trigger_03=1
+		PlaySound(Samples[LastInst03],2,0)
+	Endif
+	If samplereplen[LastInst03]=samplelength[LastInst03]
+		PlaySound(Samples[LastInst03],2,1)
+	Endif
+	If samplereplen[LastInst03]=2
+		Sample_Looped_Trigger_03=0
+		PlaySound(Samples[LastInst03],2,0)
+	Endif
+Endif
+endif
+
+If Not EDTrigger04
+If tracks04[tpos+(patterns[ppos]*64)] And LastFX04<>3 And LastFX04<>5
+	If samplereplen[LastInst04]>2 And samplerepeat[LastInst04]
+		Sample_Looped_Trigger_04=1
+		PlaySound(Samples[LastInst04],3,0)
+	Endif
+	If samplereplen[LastInst04]=samplelength[LastInst04]
+		PlaySound(Samples[LastInst04],3,1)
+	Endif
+	If samplereplen[LastInst04]=2
+		Sample_Looped_Trigger_04=0
+		PlaySound(Samples[LastInst04],3,0)
+	endif
+Endif
+endif
+'----------------------------------------
+
+	' Pos and reset counter
+	tpos+=1
+	framecount=0
+
+	If tpos>63
+		tpos=0
+		If PatternPlay=0 Then ppos+=1 ' Skips
+	Endif
+	
+Endif
+
+If framecount=0
+' Set BXX Jump
+If LastFX01=11	
+	ppos=LastFX201
+	tpos=0
+	'framecount=1
+	'Return
+Endif
+If LastFX02=11
+	ppos=LastFX202
+	tpos=0
+	'framecount=1
+	'Return
+Endif
+If LastFX03=11
+	ppos=LastFX203
+	tpos=0
+	'framecount=1
+	'Return
+Endif
+If LastFX04=11
+	ppos=LastFX204
+	tpos=0
+	'framecount=1
+	'Return
+Endif
+
+' Set DXX Jump
+If LastFX01=13
+	tpos=Int(Int2Hex4(LastFX201))
+	ppos+=1
+	'framecount=1
+	'Return
+Endif
+If LastFX02=13
+	tpos=Int(Int2Hex4(LastFX202))
+	ppos+=1
+	'framecount=1
+	'Return
+Endif
+If LastFX03=13
+	tpos=Int(Int2Hex4(LastFX203))
+	ppos+=1
+	'framecount=1
+	'Return
+Endif
+If LastFX04=13
+	tpos=Int(Int2Hex4(LastFX204))
+	ppos+=1
+	'framecount=1
+	'Return
+Endif
+endif
+
+' EDx Sampletrigger
+If EDTrigger01 And framecount=EDTrigger01 ' if SampleTrigger EDX
+If tracks01[tpos+(patterns[ppos]*64)] And LastFX01<>3 And LastFX01<>5
+	If samplereplen[LastInst01]>2 And samplerepeat[LastInst01]
+		Sample_Looped_Trigger_01=1
+		PlaySound(Samples[LastInst01],0,0)
+	Endif
+	If samplereplen[LastInst01]=samplelength[LastInst01]
+		PlaySound(Samples[LastInst01],0,1)
+	Endif
+	If samplereplen[LastInst01]=2
+		Sample_Looped_Trigger_01=0
+		PlaySound(Samples[LastInst01],0,0)
+	Endif
+Endif
+endif
+
+If EDTrigger02 And framecount=EDTrigger02 ' if SampleTrigger EDX
+If tracks02[tpos+(patterns[ppos]*64)] And LastFX02<>3 And LastFX02<>5
+	If samplereplen[LastInst02]>2 And samplerepeat[LastInst02]
+		Sample_Looped_Trigger_02=1
+		PlaySound(Samples[LastInst02],1,0)
+	Endif
+	If samplereplen[LastInst02]=samplelength[LastInst02]
+		PlaySound(Samples[LastInst02],1,1)
+	Endif
+	If samplereplen[LastInst02]=2
+		Sample_Looped_Trigger_02=0
+		PlaySound(Samples[LastInst02],1,0)
+	Endif
+Endif
+endif
+
+If EDTrigger03 And framecount=EDTrigger03 ' if SampleTrigger EDX
+If tracks03[tpos+(patterns[ppos]*64)] And LastFX03<>3 And LastFX03<>5
+	If samplereplen[LastInst03]>2 And samplerepeat[LastInst03]
+		Sample_Looped_Trigger_03=1
+		PlaySound(Samples[LastInst03],2,0)
+	Endif
+	If samplereplen[LastInst03]=samplelength[LastInst03]
+		PlaySound(Samples[LastInst03],2,1)
+	Endif
+	If samplereplen[LastInst03]=2
+		Sample_Looped_Trigger_03=0
+		PlaySound(Samples[LastInst03],2,0)
+	Endif
+Endif
+endif
+
+If EDTrigger04 And framecount=EDTrigger04 ' if SampleTrigger EDX
+If tracks04[tpos+(patterns[ppos]*64)] And LastFX04<>3 And LastFX04<>5
+	If samplereplen[LastInst04]>2 And samplerepeat[LastInst04]
+		Sample_Looped_Trigger_04=1
+		PlaySound(Samples[LastInst04],3,0)
+	Endif
+	If samplereplen[LastInst04]=samplelength[LastInst04]
+		PlaySound(Samples[LastInst04],3,1)
+	Endif
+	If samplereplen[LastInst04]=2
+		Sample_Looped_Trigger_04=0
+		PlaySound(Samples[LastInst04],3,0)
+	endif
+Endif
+endif
+'----------------------------------------
+
+' Sample Replen Play
+If EDTrigger01 And framecount=EDTrigger01
+	If Not ChannelState(0) And Sample_Looped_Trigger_01=1
+	PlaySound(Samples_looped[LastInst01],0,1)
+	Sample_Looped_Trigger_01=0
+	Endif
+Else
+	If Not ChannelState(0) And Sample_Looped_Trigger_01=1
+	PlaySound(Samples_looped[LastInst01],0,1)
+	Sample_Looped_Trigger_01=0
+	Endif
+Endif
+If EDTrigger02 And framecount=EDTrigger02
+	If Not ChannelState(1) And Sample_Looped_Trigger_02=1
+	PlaySound(Samples_looped[LastInst02],1,1)
+	Sample_Looped_Trigger_02=0
+	Endif
+Else
+	If Not ChannelState(1) And Sample_Looped_Trigger_02=1
+	PlaySound(Samples_looped[LastInst02],1,1)
+	Sample_Looped_Trigger_02=0
+	Endif
+Endif
+If EDTrigger03 And framecount=EDTrigger03
+	If Not ChannelState(2) And Sample_Looped_Trigger_03=1
+	PlaySound(Samples_looped[LastInst03],2,1)
+	Sample_Looped_Trigger_03=0
+	Endif
+Else
+	If Not ChannelState(2) And Sample_Looped_Trigger_03=1
+	PlaySound(Samples_looped[LastInst03],2,1)
+	Sample_Looped_Trigger_03=0
+	Endif
+Endif
+If EDTrigger04 And framecount=EDTrigger04
+	If Not ChannelState(3) And Sample_Looped_Trigger_04=1
+	PlaySound(Samples_looped[LastInst04],3,1)
+	Sample_Looped_Trigger_04=0
+	Endif
+Else
+	If Not ChannelState(3) And Sample_Looped_Trigger_04=1
+	PlaySound(Samples_looped[LastInst04],3,1)
+	Sample_Looped_Trigger_04=0
+	Endif
+endif
+	
+' Set AXX 6XX 5XX 'Change Oct-25
+If framecount>0 'Starts Counting the First Frame / Orig Protracker
+If tracks_fx01[tpos-1+(patterns[ppos]*64)]=10 Or tracks_fx01[tpos-1+(patterns[ppos]*64)]=6 Or tracks_fx01[tpos-1+(patterns[ppos]*64)]=5
+	If tracks_fx201[tpos-1+(patterns[ppos]*64)]<16 Then Volume01-=tracks_fx201[tpos-1+(patterns[ppos]*64)]
+	If tracks_fx201[tpos-1+(patterns[ppos]*64)]>15 Then Volume01+=tracks_fx201[tpos-1+(patterns[ppos]*64)]/16
+Endif
+If tracks_fx02[tpos-1+(patterns[ppos]*64)]=10 Or tracks_fx02[tpos-1+(patterns[ppos]*64)]=6 Or tracks_fx02[tpos-1+(patterns[ppos]*64)]=5
+	If tracks_fx202[tpos-1+(patterns[ppos]*64)]<16 Then Volume02-=tracks_fx202[tpos-1+(patterns[ppos]*64)]
+	If tracks_fx202[tpos-1+(patterns[ppos]*64)]>15 Then Volume02+=tracks_fx202[tpos-1+(patterns[ppos]*64)]/16
+Endif
+If tracks_fx03[tpos-1+(patterns[ppos]*64)]=10 Or tracks_fx03[tpos-1+(patterns[ppos]*64)]=6 Or tracks_fx03[tpos-1+(patterns[ppos]*64)]=5
+	If tracks_fx203[tpos-1+(patterns[ppos]*64)]<16 Then Volume03-=tracks_fx203[tpos-1+(patterns[ppos]*64)]
+	If tracks_fx203[tpos-1+(patterns[ppos]*64)]>15 Then Volume03+=tracks_fx203[tpos-1+(patterns[ppos]*64)]/16
+Endif
+If tracks_fx04[tpos-1+(patterns[ppos]*64)]=10 Or tracks_fx04[tpos-1+(patterns[ppos]*64)]=6 Or tracks_fx04[tpos-1+(patterns[ppos]*64)]=5
+	If tracks_fx204[tpos-1+(patterns[ppos]*64)]<16 Then Volume04-=tracks_fx204[tpos-1+(patterns[ppos]*64)]
+	If tracks_fx204[tpos-1+(patterns[ppos]*64)]>15 Then Volume04+=tracks_fx204[tpos-1+(patterns[ppos]*64)]/16
+Endif
+
+' Set EAx and EBx 'Okt-25
+If framecount=1 'Fine Volume Slide every first Frame / Orig Protracker
+If tracks_fx01[tpos-1+(patterns[ppos]*64)]=14 
+	If (tracks_fx201[tpos-1+(patterns[ppos]*64)]/16)*16=170 Then Volume01-=(tracks_fx201[tpos-1+(patterns[ppos]*64)]-170)
+	If (tracks_fx201[tpos-1+(patterns[ppos]*64)]/16)*16=160 Then Volume01+=(tracks_fx201[tpos-1+(patterns[ppos]*64)]-160)
+Endif
+If tracks_fx02[tpos-1+(patterns[ppos]*64)]=14
+	If (tracks_fx202[tpos-1+(patterns[ppos]*64)]/16)*16=170 Then Volume02-=(tracks_fx202[tpos-1+(patterns[ppos]*64)]-170)
+	If (tracks_fx202[tpos-1+(patterns[ppos]*64)]/16)*16=160 Then Volume02+=(tracks_fx202[tpos-1+(patterns[ppos]*64)]-160)
+Endif
+If tracks_fx03[tpos-1+(patterns[ppos]*64)]=14
+	If (tracks_fx203[tpos-1+(patterns[ppos]*64)]/16)*16=170 Then Volume03-=(tracks_fx203[tpos-1+(patterns[ppos]*64)]-170)
+	If (tracks_fx203[tpos-1+(patterns[ppos]*64)]/16)*16=160 Then Volume03+=(tracks_fx203[tpos-1+(patterns[ppos]*64)]-160)
+Endif
+If tracks_fx04[tpos-1+(patterns[ppos]*64)]=14
+	If (tracks_fx204[tpos-1+(patterns[ppos]*64)]/16)*16=170 Then Volume04-=(tracks_fx204[tpos-1+(patterns[ppos]*64)]-170)
+	If (tracks_fx204[tpos-1+(patterns[ppos]*64)]/16)*16=160 Then Volume04+=(tracks_fx204[tpos-1+(patterns[ppos]*64)]-160)
+Endif
+endif
+Endif
+
+' Limit Volume 'Change Oct-25
+If tracks_fx01[tpos-1+(patterns[ppos]*64)]<>12 And Volume01>samplevolume[LastInst01] Then Volume01=samplevolume[LastInst01]
+If tracks_fx02[tpos-1+(patterns[ppos]*64)]<>12 And Volume02>samplevolume[LastInst02] Then Volume02=samplevolume[LastInst02]
+If tracks_fx03[tpos-1+(patterns[ppos]*64)]<>12 And Volume03>samplevolume[LastInst03] Then Volume03=samplevolume[LastInst03] 
+If tracks_fx04[tpos-1+(patterns[ppos]*64)]<>12 And Volume04>samplevolume[LastInst04] Then Volume04=samplevolume[LastInst04]
+
+If Volume01<0 Then Volume01=0
+If Volume02<0 Then Volume02=0
+If Volume03<0 Then Volume03=0
+If Volume04<0 Then Volume04=0
+
+'Set Channelvolume
+SetChannelVolume(0,Float((0.5/64)*Volume01))
+SetChannelVolume(1,Float((0.5/64)*Volume02))
+SetChannelVolume(2,Float((0.5/64)*Volume03))
+SetChannelVolume(3,Float((0.5/64)*Volume04))
+
+'If Chanmute
+If ChanMute01 Then SetChannelVolume(0,0.0)
+If ChanMute02 Then SetChannelVolume(1,0.0)
+If ChanMute03 Then SetChannelVolume(2,0.0)
+If ChanMute04 Then SetChannelVolume(3,0.0)
+
+' Set 1XX
+If framecount>0
+If tracks_fx01[tpos-1+(patterns[ppos]*64)]=1
+		PitchVal01-=tracks_fx201[tpos-1+(patterns[ppos]*64)]*dfx
+Endif
+If tracks_fx02[tpos-1+(patterns[ppos]*64)]=1
+		PitchVal02-=tracks_fx202[tpos-1+(patterns[ppos]*64)]*dfx
+Endif
+If tracks_fx03[tpos-1+(patterns[ppos]*64)]=1
+		PitchVal03-=tracks_fx203[tpos-1+(patterns[ppos]*64)]*dfx
+Endif
+If tracks_fx04[tpos-1+(patterns[ppos]*64)]=1
+		PitchVal04-=tracks_fx204[tpos-1+(patterns[ppos]*64)]*dfx
+Endif
+
+' Set 2XX
+If tracks_fx01[tpos-1+(patterns[ppos]*64)]=2
+		PitchVal01+=tracks_fx201[tpos-1+(patterns[ppos]*64)]*dfx
+Endif
+If tracks_fx02[tpos-1+(patterns[ppos]*64)]=2
+		PitchVal02+=tracks_fx202[tpos-1+(patterns[ppos]*64)]*dfx
+Endif
+If tracks_fx03[tpos-1+(patterns[ppos]*64)]=2
+		PitchVal03+=tracks_fx203[tpos-1+(patterns[ppos]*64)]*dfx
+Endif
+If tracks_fx04[tpos-1+(patterns[ppos]*64)]=2
+		PitchVal04+=tracks_fx204[tpos-1+(patterns[ppos]*64)]*dfx
+Endif
+
+
+' Set E1X
+If framecount=1 ' Fine Portamento up / Down / Orig. Protracker
+If tracks_fx01[tpos-1+(patterns[ppos]*64)]=14 And Int(tracks_fx201[tpos-1+(patterns[ppos]*64)]/16)*16=16
+		PitchVal01-=(tracks_fx201[tpos-1+(patterns[ppos]*64)]-16)
+Endif
+If tracks_fx02[tpos-1+(patterns[ppos]*64)]=14 And Int(tracks_fx202[tpos-1+(patterns[ppos]*64)]/16)*16=16
+		PitchVal02-=(tracks_fx202[tpos-1+(patterns[ppos]*64)]-16)
+Endif
+If tracks_fx03[tpos-1+(patterns[ppos]*64)]=14 And Int(tracks_fx203[tpos-1+(patterns[ppos]*64)]/16)*16=16
+		PitchVal03-=(tracks_fx203[tpos-1+(patterns[ppos]*64)]-16)
+Endif
+If tracks_fx04[tpos-1+(patterns[ppos]*64)]=14 And Int(tracks_fx204[tpos-1+(patterns[ppos]*64)]/16)*16=16
+		PitchVal04-=(tracks_fx204[tpos-1+(patterns[ppos]*64)]-16)
+Endif
+
+' Set E2X
+If tracks_fx01[tpos-1+(patterns[ppos]*64)]=14 And Int(tracks_fx201[tpos-1+(patterns[ppos]*64)]/32)*32=32
+		PitchVal01+=(tracks_fx201[tpos-1+(patterns[ppos]*64)]-32)
+Endif
+If tracks_fx02[tpos-1+(patterns[ppos]*64)]=14 And Int(tracks_fx202[tpos-1+(patterns[ppos]*64)]/32)*32=32
+		PitchVal02+=(tracks_fx202[tpos-1+(patterns[ppos]*64)]-32)
+Endif
+If tracks_fx03[tpos-1+(patterns[ppos]*64)]=14 And Int(tracks_fx203[tpos-1+(patterns[ppos]*64)]/32)*32=32
+		PitchVal03+=(tracks_fx203[tpos-1+(patterns[ppos]*64)]-32)
+Endif
+If tracks_fx04[tpos-1+(patterns[ppos]*64)]=14 And Int(tracks_fx204[tpos-1+(patterns[ppos]*64)]/32)*32=32
+		PitchVal04+=(tracks_fx204[tpos-1+(patterns[ppos]*64)]-32)
+Endif
+Endif
+
+' Set 3xx 5xx 'Change Oct-25
+If tracks_fx01[tpos-1+(patterns[ppos]*64)]=3 And GlideVal01+(2*PeriodTable[48-(GlideNote01)])>(2*PeriodTable[48-(LastNote01)]) Or tracks_fx01[tpos-1+(patterns[ppos]*64)]=5 And GlideVal01+(2*PeriodTable[48-(GlideNote01)])>(2*PeriodTable[48-(LastNote01)])
+	GlideVal01-=GlideCount01
+	If Int(GlideVal01+(2*PeriodTable[48-(GlideNote01)]))<(2*PeriodTable[48-(LastNote01)])
+	GlideNote01=LastNote01
+	GlideVal01=0
+	endif
+Endif
+If tracks_fx02[tpos-1+(patterns[ppos]*64)]=3 And GlideVal02+(2*PeriodTable[48-(GlideNote02)])>(2*PeriodTable[48-(LastNote02)]) Or tracks_fx02[tpos-1+(patterns[ppos]*64)]=5 And GlideVal02+(2*PeriodTable[48-(GlideNote02)])>(2*PeriodTable[48-(LastNote02)])
+	GlideVal02-=GlideCount02
+	If Int(GlideVal02+(2*PeriodTable[48-(GlideNote02)]))<(2*PeriodTable[48-(LastNote02)])
+	GlideNote02=LastNote02
+	GlideVal02=0
+	endif
+Endif
+If tracks_fx03[tpos-1+(patterns[ppos]*64)]=3 And GlideVal03+(2*PeriodTable[48-(GlideNote03)])>(2*PeriodTable[48-(LastNote03)]) Or tracks_fx03[tpos-1+(patterns[ppos]*64)]=5 And GlideVal03+(2*PeriodTable[48-(GlideNote03)])>(2*PeriodTable[48-(LastNote03)])
+	GlideVal03-=GlideCount03
+	If Int(GlideVal03+(2*PeriodTable[48-(GlideNote03)]))<(2*PeriodTable[48-(LastNote03)])
+	GlideNote03=LastNote03
+	GlideVal03=0
+	endif
+Endif
+If tracks_fx04[tpos-1+(patterns[ppos]*64)]=3 And GlideVal04+(2*PeriodTable[48-(GlideNote04)])>(2*PeriodTable[48-(LastNote04)]) Or tracks_fx04[tpos-1+(patterns[ppos]*64)]=5 And GlideVal04+(2*PeriodTable[48-(GlideNote04)])>(2*PeriodTable[48-(LastNote04)])
+	GlideVal04-=GlideCount04
+	If Int(GlideVal04+(2*PeriodTable[48-(GlideNote04)]))<(2*PeriodTable[48-(LastNote04)])
+	GlideNote04=LastNote04
+	GlideVal04=0
+	endif
+Endif
+
+If tracks_fx01[tpos-1+(patterns[ppos]*64)]=3 And GlideVal01+(2*PeriodTable[48-(GlideNote01)])<(2*PeriodTable[48-(LastNote01)]) Or tracks_fx01[tpos-1+(patterns[ppos]*64)]=5 And GlideVal01+(2*PeriodTable[48-(GlideNote01)])<(2*PeriodTable[48-(LastNote01)])
+	GlideVal01+=GlideCount01
+	If Int(GlideVal01+(2*PeriodTable[48-(GlideNote01)]))>(2*PeriodTable[48-(LastNote01)])
+	GlideNote01=LastNote01
+	GlideVal01=0
+	endif
+Endif
+If tracks_fx02[tpos-1+(patterns[ppos]*64)]=3 And GlideVal02+(2*PeriodTable[48-(GlideNote02)])<(2*PeriodTable[48-(LastNote02)]) Or tracks_fx02[tpos-1+(patterns[ppos]*64)]=5 And GlideVal02+(2*PeriodTable[48-(GlideNote02)])<(2*PeriodTable[48-(LastNote02)])
+	GlideVal02+=GlideCount02
+	If Int(GlideVal02+(2*PeriodTable[48-(GlideNote02)]))>(2*PeriodTable[48-(LastNote02)])
+	GlideNote02=LastNote02
+	GlideVal02=0
+	endif
+Endif
+If tracks_fx03[tpos-1+(patterns[ppos]*64)]=3 And GlideVal03+(2*PeriodTable[48-(GlideNote03)])<(2*PeriodTable[48-(LastNote03)]) Or tracks_fx03[tpos-1+(patterns[ppos]*64)]=5 And GlideVal03+(2*PeriodTable[48-(GlideNote03)])<(2*PeriodTable[48-(LastNote03)])
+	GlideVal03+=GlideCount03
+	If Int(GlideVal03+(2*PeriodTable[48-(GlideNote03)]))>(2*PeriodTable[48-(LastNote03)])
+	GlideNote03=LastNote03
+	GlideVal03=0
+	endif
+Endif
+If tracks_fx04[tpos-1+(patterns[ppos]*64)]=3 And GlideVal04+(2*PeriodTable[48-(GlideNote04)])<(2*PeriodTable[48-(LastNote04)]) Or tracks_fx04[tpos-1+(patterns[ppos]*64)]=5 And GlideVal04+(2*PeriodTable[48-(GlideNote04)])<(2*PeriodTable[48-(LastNote04)])
+	GlideVal04+=GlideCount04
+	If Int(GlideVal04+(2*PeriodTable[48-(GlideNote04)]))>(2*PeriodTable[48-(LastNote04)])
+	GlideNote04=LastNote04
+	GlideVal04=0
+	endif
+Endif
+Endif
+
+' Set 0XX
+If tracks_fx01[tpos-1+(patterns[ppos]*64)]=0 And tracks_fx201[tpos-1+(patterns[ppos]*64)]
+	If ArpCounter=0 Then ArpVal01=0
+	If ArpCounter=1 Then ArpVal01=Int(tracks_fx201[tpos-1+(patterns[ppos]*64)]/16)
+	If ArpCounter=2 Then ArpVal01=tracks_fx201[tpos-1+(patterns[ppos]*64)]-(Int(tracks_fx201[tpos-1+(patterns[ppos]*64)]/16)*16)
+Endif
+If tracks_fx02[tpos-1+(patterns[ppos]*64)]=0 And tracks_fx202[tpos-1+(patterns[ppos]*64)]
+	If ArpCounter=0 Then ArpVal02=0
+	If ArpCounter=1 Then ArpVal02=Int(tracks_fx202[tpos-1+(patterns[ppos]*64)]/16)
+	If ArpCounter=2 Then ArpVal02=tracks_fx202[tpos-1+(patterns[ppos]*64)]-(Int(tracks_fx202[tpos-1+(patterns[ppos]*64)]/16)*16)
+Endif
+If tracks_fx03[tpos-1+(patterns[ppos]*64)]=0 And tracks_fx203[tpos-1+(patterns[ppos]*64)]
+	If ArpCounter=0 Then ArpVal03=0
+	If ArpCounter=1 Then ArpVal03=Int(tracks_fx203[tpos-1+(patterns[ppos]*64)]/16)
+	If ArpCounter=2 Then ArpVal03=tracks_fx203[tpos-1+(patterns[ppos]*64)]-(Int(tracks_fx203[tpos-1+(patterns[ppos]*64)]/16)*16)
+Endif	
+If tracks_fx04[tpos-1+(patterns[ppos]*64)]=0 And tracks_fx204[tpos-1+(patterns[ppos]*64)]
+	If ArpCounter=0 Then ArpVal04=0
+	If ArpCounter=1 Then ArpVal04=Int(tracks_fx204[tpos-1+(patterns[ppos]*64)]/16)
+	If ArpCounter=2 Then ArpVal04=tracks_fx204[tpos-1+(patterns[ppos]*64)]-(Int(tracks_fx204[tpos-1+(patterns[ppos]*64)]/16)*16)
+Endif
+	
+ArpCounter+=1
+If ArpCounter>2 Then ArpCounter=0
+
+' Vibrato Calc
+If LastFX01=4 Or LastFX01=6' NEW PUT TO TRACKER
+	vib_seq01+=Vibrato01_speed*5
+	If vib_seq01>360 Then vib_seq01=0
+	Vibrato01_p=Sin(vib_seq01)*Vibrato01_depth*2
+	Else
+	Vibrato01_p=0
+endif
+
+If LastFX02=4 Or LastFX02=6
+	vib_seq02+=Vibrato02_speed*5
+	If vib_seq02>360 Then vib_seq02=0
+	Vibrato02_p=Sin(vib_seq02)*Vibrato02_depth*2
+	Else
+	Vibrato02_p=0
+endif
+
+If LastFX03=4 Or LastFX03=6
+	vib_seq03+=Vibrato03_speed*5
+	If vib_seq03>360 Then vib_seq03=0
+	Vibrato03_p=Sin(vib_seq03)*Vibrato03_depth*2
+	Else
+	Vibrato03_p=0
+Endif
+
+If LastFX04=4 Or LastFX04=6
+	vib_seq04+=Vibrato04_speed*5
+	If vib_seq04>360 Then vib_seq04=0
+	Vibrato04_p=Sin(vib_seq04)*Vibrato04_depth*2
+	Else
+	Vibrato04_p=0
+Endif
+
+' set pitch rate - oct 25
+If tracks_fx01[tpos-1+(patterns[ppos]*64)]<>3 and tracks_fx01[tpos-1+(patterns[ppos]*64)]<>5
+	SetChannelRate( 0, ( 7159090.0 / (PitchVal01+Vibrato01_p+(2 * PeriodTable[ (finetune[LastInst01]*36)+48-(LastNote01+ArpVal01) ] )) / 8400.00 ) ) 
+Else
+	SetChannelRate( 0, ( 7159090.0 / (PitchVal01+GlideVal01+(2 * PeriodTable[ (finetune[LastInst01]*36)+48-(GlideNote01+ArpVal01) ] )) / 8400.00 ) )
+Endif
+If tracks_fx02[tpos-1+(patterns[ppos]*64)]<>3 and tracks_fx02[tpos-1+(patterns[ppos]*64)]<>5
+	SetChannelRate( 1, ( 7159090.0 / (PitchVal02+Vibrato02_p+(2 * PeriodTable[ (finetune[LastInst02]*36)+48-(LastNote02+ArpVal02) ] )) / 8400.00 ) )
+Else
+	SetChannelRate( 1, ( 7159090.0 / (PitchVal02+GlideVal02+(2 * PeriodTable[ (finetune[LastInst02]*36)+48-(GlideNote02+ArpVal02) ] )) / 8400.00 ) )
+Endif
+If tracks_fx03[tpos-1+(patterns[ppos]*64)]<>3 and tracks_fx03[tpos-1+(patterns[ppos]*64)]<>5
+	SetChannelRate( 2, ( 7159090.0 / (PitchVal03+Vibrato03_p+(2 * PeriodTable[ (finetune[LastInst03]*36)+48-(LastNote03+ArpVal03) ] )) / 8400.00 ) )
+Else
+	SetChannelRate( 2, ( 7159090.0 / (PitchVal03+GlideVal03+(2 * PeriodTable[ (finetune[LastInst03]*36)+48-(GlideNote03+ArpVal03) ] )) / 8400.00 ) )
+Endif
+If tracks_fx04[tpos-1+(patterns[ppos]*64)]<>3 and tracks_fx04[tpos-1+(patterns[ppos]*64)]<>5
+	SetChannelRate( 3, ( 7159090.0 / (PitchVal04+Vibrato04_p+(2 * PeriodTable[ (finetune[LastInst04]*36)+48-(LastNote04+ArpVal04) ] )) / 8400.00 ) )
+Else
+	SetChannelRate( 3, ( 7159090.0 / (PitchVal04+GlideVal04+(2 * PeriodTable[ (finetune[LastInst04]*36)+48-(GlideNote04+ArpVal04) ] )) / 8400.00 ) )
+endif
+
+
+framecount+=1
+
+End
+
+Method OnRender()
+Scale(scl,scl)
+Translate(Border,Border)
+Cls(Int(BackColor[0]),Int(BackColor[1]),Int(BackColor[2]))' BackColor
+
+' Draw Background
+DrawImage(Background,0,0)
+
+SetFont(tfont)
+
+' Songinformations
+SetColor(Int(FontColor01[0]),Int(FontColor01[1]),Int(FontColor01[2]))' FonColor1
+DrawText(FillZeros(ppos),64,1)' Position
+DrawText(FillZeros(patterns[ppos]),64,12)' Pattern
+DrawText(FillZeros(Songlength),64,23)' Songlength
+DrawText("  "+FinetuneDisplay(finetune[CurrentInst]),64,34)' Finetune
+DrawText("00"+Int2Hex(CurrentInst),64,45)' SampleNo
+DrawText("00"+Int2Hex(samplevolume[CurrentInst]),64,56)' Samplevol
+DrawText(FillZeros2(Int2Hex4(samplelength[CurrentInst])),64,67)' Samplelength
+DrawText(FillZeros2(Int2Hex4(samplerepeat[CurrentInst])),64,78)' Repeat
+DrawText(FillZeros2(Int2Hex4(samplereplen[CurrentInst])),64,89)' Replen
+DrawText(songname.Replace(String.FromChar(0),"_"),104,100)' Songname
+If TINPUT=1 ' Draw Cursor
+	SetColor(128,0,128) 
+	DrawRect(104+(songname.Length)*8,107,8,2)' Songname Input	
+	SetColor(Int(FontColor01[0]),Int(FontColor01[1]),Int(FontColor01[2]))' FonColor1
+endif
+DrawText(instdesc[CurrentInst].Replace(String.FromChar(0),"_"),104,111)' Sampledescription
+If TINPUT2=1 ' Draw Cursor
+	SetColor(128,0,128) 
+	DrawRect(104+(instdesc[CurrentInst].Length)*8,118,8,2)' Sampledescription Input
+	SetColor(Int(FontColor01[0]),Int(FontColor01[1]),Int(FontColor01[2]))' FonColor1
+endif
+DrawText(ModfileData.Length,312-(String(ModfileData.Length).Length*8),125)' Tunesize
+DrawText(Info,88,125)' Status
+DrawText(FillZeros3(patterns[ppos]),8,125)' Patternnumber
+
+' Stereo Seperation
+DrawText(StereoSeperation*50+"%",124,45)'317-String(StereoSeperation*50).Length*8
+' Timer
+SetFont(tfont)
+	If PlayMode=0 Then cmillisecs=Millisecs()
+	If PlayMode=0 Then cmillisecs2=Millisecs()
+	seconds=(Millisecs()-cmillisecs2)/1000
+	If seconds=60 Then cmillisecs2=Millisecs()
+	
+If seconds<10
+	DrawText((Millisecs()-cmillisecs)/60000+":0"+seconds,100+3+22*8,100)
+Else
+	DrawText((Millisecs()-cmillisecs)/60000+":"+seconds,100+3+22*8,100)
+Endif
+'-------
+
+' Author
+For Local yy=0 To 4
+For Local xx=0 To 16
+SetColor(21,21,21)
+If author[xx+(yy*17)..xx+(yy*17)+1]="1" Then DrawRect(0+xx,256+yy,1,1)
+Next
+Next
+'-------
+
+' KeyMap
+If KeyMap=1 Then DrawText("DE",8,100)
+If KeyMap=0 Then DrawText("US",8,100)
+'-------
+
+' Mute Buttonshadow
+'SetAlpha(0.25)
+	If ChanMute01
+		SetColor(Int(GuiColor01[2]),Int(GuiColor01[1]),Int(GuiColor01[0]))
+		DrawRect(309,1,10,9)
+		SetColor(Int(GuiColor03[2]),Int(GuiColor03[1]),Int(GuiColor03[0]))
+		DrawText("1",309,1)
+	endif
+	If ChanMute02
+		SetColor(Int(GuiColor01[2]),Int(GuiColor01[1]),Int(GuiColor01[0]))
+		DrawRect(309,12,10,9)
+		SetColor(Int(GuiColor03[2]),Int(GuiColor03[1]),Int(GuiColor03[0]))
+		DrawText("2",309,12)
+	endif
+	If ChanMute03
+		SetColor(Int(GuiColor01[2]),Int(GuiColor01[1]),Int(GuiColor01[0]))
+		DrawRect(309,23,10,9)
+		SetColor(Int(GuiColor03[2]),Int(GuiColor03[1]),Int(GuiColor03[0]))
+		DrawText("3",309,23)
+	endif
+	If ChanMute04
+		SetColor(Int(GuiColor01[2]),Int(GuiColor01[1]),Int(GuiColor01[0]))
+		DrawRect(309,34,10,9)
+		SetColor(Int(GuiColor03[2]),Int(GuiColor03[1]),Int(GuiColor03[0]))
+		DrawText("4",309,34)
+	endif	
+'SetAlpha(1)
+'------------
+
+' Lower
+For Local pdr=0+tpos To DisplayLength+tpos
+
+	' Show CopyBlockMark ---------------------------------
+	If Mark=1 And pdr>StartBlock-1 And pdr<EndBlock+1
+	SetColor(64,64,64)
+	If pdr<>tpos Then DrawRect(32+CurrentT*72,193+1+(pdr-tpos)*(FontW-1),64,8)
+	Endif
+	'--------------------------------------------'
+
+	'SetColor(64,128,0)' LightBlue
+	SetColor(Int(FontColor02[0]),Int(FontColor02[1]),Int(FontColor02[2]))' FonColor2
+
+pdr63=(pdr/64)' New Pattern Starts
+
+	If pdr63 And pdr-(pdr63*64)>-1'=0
+
+	else
+	If pdr<>tpos Then DrawText( Int2Hex(pdr-(pdr63*64)) + " " + DisplayNote( tracks01,pdr,patterns[ppos] ) +Int2Hex(tracks_inst01[pdr+(patterns[ppos]*64)]) +Int2Hex1(tracks_fx01[pdr+(patterns[ppos]*64)])+Int2Hex(tracks_fx201[pdr+(patterns[ppos]*64)]) + " " + DisplayNote( tracks02,pdr,patterns[ppos] )+Int2Hex(tracks_inst02[pdr+(patterns[ppos]*64)])+Int2Hex1(tracks_fx02[pdr+(patterns[ppos]*64)])+Int2Hex(tracks_fx202[pdr+(patterns[ppos]*64)])+" "+DisplayNote( tracks03,pdr,patterns[ppos] )+Int2Hex(tracks_inst03[pdr+(patterns[ppos]*64)])+Int2Hex1(tracks_fx03[pdr+(patterns[ppos]*64)])+Int2Hex(tracks_fx203[pdr+(patterns[ppos]*64)])+" "+DisplayNote( tracks04,pdr,patterns[ppos] )+Int2Hex(tracks_inst04[pdr+(patterns[ppos]*64)])+Int2Hex1(tracks_fx04[pdr+(patterns[ppos]*64)])+Int2Hex(tracks_fx204[pdr+(patterns[ppos]*64)]),8,193+1+(pdr-tpos)*(FontW-1) )
+	endif
+	
+Next
+
+' Upper
+For Local pdr=-DisplayLength+tpos To 0+tpos
+
+	' Show CopyBlockMark ---------------------------------
+	If Mark=1 And pdr>StartBlock-1 And pdr<EndBlock+1
+	SetColor(64,64,64)
+	If pdr<>tpos Then DrawRect(32+CurrentT*72,193-6+(pdr-tpos)*(FontW-1),64,8)
+	Endif
+	'--------------------------------------------'
+
+	'SetColor(64,128,0)' LightBlue
+	SetColor(Int(FontColor02[0]),Int(FontColor02[1]),Int(FontColor02[2]))' FonColor2	
+	If pdr=tpos Then SetColor(Int(FontColor01[0]),Int(FontColor01[1]),Int(FontColor01[2]))' FonColor1
+	If pdr=tpos Then SetFont(tfont2)
+	
+pdr63=(pdr/64)' New Pattern Starts
+
+	If pdr63 And pdr-(pdr63*64)>-1'=0
+
+	Else
+		If pdr=tpos And pdr > -1
+			DrawText( Int2Hex(pdr-(pdr63*64)) + " " + DisplayNote( tracks01,pdr,patterns[ppos] ) +Int2Hex(tracks_inst01[pdr+(patterns[ppos]*64)]) +Int2Hex1(tracks_fx01[pdr+(patterns[ppos]*64)])+Int2Hex(tracks_fx201[pdr+(patterns[ppos]*64)]) + " " + DisplayNote( tracks02,pdr,patterns[ppos] )+Int2Hex(tracks_inst02[pdr+(patterns[ppos]*64)])+Int2Hex1(tracks_fx02[pdr+(patterns[ppos]*64)])+Int2Hex(tracks_fx202[pdr+(patterns[ppos]*64)])+" "+DisplayNote( tracks03,pdr,patterns[ppos] )+Int2Hex(tracks_inst03[pdr+(patterns[ppos]*64)])+Int2Hex1(tracks_fx03[pdr+(patterns[ppos]*64)])+Int2Hex(tracks_fx203[pdr+(patterns[ppos]*64)])+" "+DisplayNote( tracks04,pdr,patterns[ppos] )+Int2Hex(tracks_inst04[pdr+(patterns[ppos]*64)])+Int2Hex1(tracks_fx04[pdr+(patterns[ppos]*64)])+Int2Hex(tracks_fx204[pdr+(patterns[ppos]*64)]),8,193-7+(pdr-tpos)*(FontW-1) )
+		else
+			If pdr > -1 Then DrawText( Int2Hex(pdr-(pdr63*64)) + " " + DisplayNote( tracks01,pdr,patterns[ppos] ) +Int2Hex(tracks_inst01[pdr+(patterns[ppos]*64)]) +Int2Hex1(tracks_fx01[pdr+(patterns[ppos]*64)])+Int2Hex(tracks_fx201[pdr+(patterns[ppos]*64)]) + " " + DisplayNote( tracks02,pdr,patterns[ppos] )+Int2Hex(tracks_inst02[pdr+(patterns[ppos]*64)])+Int2Hex1(tracks_fx02[pdr+(patterns[ppos]*64)])+Int2Hex(tracks_fx202[pdr+(patterns[ppos]*64)])+" "+DisplayNote( tracks03,pdr,patterns[ppos] )+Int2Hex(tracks_inst03[pdr+(patterns[ppos]*64)])+Int2Hex1(tracks_fx03[pdr+(patterns[ppos]*64)])+Int2Hex(tracks_fx203[pdr+(patterns[ppos]*64)])+" "+DisplayNote( tracks04,pdr,patterns[ppos] )+Int2Hex(tracks_inst04[pdr+(patterns[ppos]*64)])+Int2Hex1(tracks_fx04[pdr+(patterns[ppos]*64)])+Int2Hex(tracks_fx204[pdr+(patterns[ppos]*64)]),8,193-6+(pdr-tpos)*(FontW-1) )
+		endif
+	endif
+
+Next
+
+' Draw vumeter
+DrawVumeter01(-1+16+5*FontW,1+20*(FontW-1)+1)
+DrawVumeter02(-1+16+14*FontW,1+20*(FontW-1)+1)
+DrawVumeter03(-1+16+23*FontW,1+20*(FontW-1)+1)
+DrawVumeter04(-1+16+32*FontW,1+20*(FontW-1)+1)
+
+
+' DrawCursor
+SetColor(255,255,255)
+DrawImage(Prtcursor,-2+4*8+CursorPos+CurrentTrack,193-5)
+
+	'Draw oscilloscope
+	DrawScope01(128+5,55)
+	DrawScope04(128+5,55)
+	'DrawScope02(128+48,55)
+	DrawScope02(128+3+48*2,55)
+	DrawScope03(128+3+48*2,55)
+	'DrawScope04(128+48*3,55)
+	
+	
+'Draw Spectraanalyzer
+If DisplaySpectra=1 Then SpectraAnalyzer()
+	
+'Mini Sampler
+If SDisplay=1 Then SampleDisplay()
+
+'About Screen
+SetColor(255,255,255)
+If About=1 Then DrawImage(AboutScreen,120,44)
+
+'Clear Menu
+If ClearChoice=1 Then DrawImage(ClearMenu,110,140)
+
+' Draw Mouse
+SetColor(255,255,255)
+If PlayMode=1 Then SetColor(255,255,0)
+If EditMode=1 Then SetColor(64,64,255)
+DrawImage(Prtmouse,(MX/scl)-Border,(MY/scl)-Border)
+
+End
+
+' Spectrascope
+Method SpectraAnalyzer()
+SetColor(255,255,255)
+DrawImage(SpectraDisplay,120,44)
+
+			If tracks01[tpos+(patterns[ppos]*64)] And Trigger=1 And ChanMute01=0 Then Spectra1[ SpectraTable[tracks01[tpos+(patterns[ppos]*64)]-13] ]+=Float(Volume01/64)*36
+			If tracks02[tpos+(patterns[ppos]*64)] And Trigger=1 And ChanMute02=0 Then Spectra1[ SpectraTable[tracks02[tpos+(patterns[ppos]*64)]-13] ]+=Float(Volume02/64)*36
+			If tracks03[tpos+(patterns[ppos]*64)] And Trigger=1 And ChanMute03=0 Then Spectra1[ SpectraTable[tracks03[tpos+(patterns[ppos]*64)]-13] ]+=Float(Volume03/64)*36
+			If tracks04[tpos+(patterns[ppos]*64)] And Trigger=1 And ChanMute04=0 Then Spectra1[ SpectraTable[tracks04[tpos+(patterns[ppos]*64)]-13] ]+=Float(Volume04/64)*36
+
+			If tracks01[tpos+(patterns[ppos]*64)] And Trigger=1 And ChanMute01=0 Then Spectra2[ SpectraTable[tracks01[tpos+(patterns[ppos]*64)]-13] ]+=(Float(Volume01/64)*36)/2
+			If tracks02[tpos+(patterns[ppos]*64)] And Trigger=1 And ChanMute02=0 Then Spectra2[ SpectraTable[tracks02[tpos+(patterns[ppos]*64)]-13] ]+=(Float(Volume02/64)*36)/2
+			If tracks03[tpos+(patterns[ppos]*64)] And Trigger=1 And ChanMute03=0 Then Spectra2[ SpectraTable[tracks03[tpos+(patterns[ppos]*64)]-13] ]+=(Float(Volume03/64)*36)/2
+			If tracks04[tpos+(patterns[ppos]*64)] And Trigger=1 And ChanMute04=0 Then Spectra2[ SpectraTable[tracks04[tpos+(patterns[ppos]*64)]-13] ]+=(Float(Volume04/64)*36)/2
+			
+			If tracks01[tpos+(patterns[ppos]*64)] And Trigger=1 And ChanMute01=0 Then Spectra3[ SpectraTable[tracks01[tpos+(patterns[ppos]*64)]-13] ]+=(Float(Volume01/64)*36)/2
+			If tracks02[tpos+(patterns[ppos]*64)] And Trigger=1 And ChanMute02=0 Then Spectra3[ SpectraTable[tracks02[tpos+(patterns[ppos]*64)]-13] ]+=(Float(Volume02/64)*36)/2
+			If tracks03[tpos+(patterns[ppos]*64)] And Trigger=1 And ChanMute03=0 Then Spectra3[ SpectraTable[tracks03[tpos+(patterns[ppos]*64)]-13] ]+=(Float(Volume03/64)*36)/2
+			If tracks04[tpos+(patterns[ppos]*64)] And Trigger=1 And ChanMute04=0 Then Spectra3[ SpectraTable[tracks04[tpos+(patterns[ppos]*64)]-13] ]+=(Float(Volume04/64)*36)/2
+
+	
+	For Local i=0 To 22
+	
+			' Limiting
+			If Spectra1[i]>36 Then Spectra1[i]=36
+			If Spectra2[i]>36 Then Spectra2[i]=36
+			If Spectra3[i]>36 Then Spectra3[i]=36
+			'---------
+		
+		SetColor(Int(VumeterTint[0]),Int(VumeterTint[1]),Int(VumeterTint[2]))	' TintColor
+	    If i>0 Then  DrawImageRect( SpectraMeter,129+( 8*(i)-8 ),95,0,36,6,Int(-Spectra2[i]) ) ' Left
+		If i<22 Then DrawImageRect( SpectraMeter,129+( 8*(i)+8 ),95,0,36,6,Int(-Spectra3[i]) ) ' Right	
+					 DrawImageRect( SpectraMeter,129+( (8*i) ),    95,0,36,6,Int(-Spectra1[i]) ) ' Mid
+		
+		If Spectra1[i]>0 Then Spectra1[i]-=1
+		If Spectra2[i]>0 Then Spectra2[i]-=1
+		If Spectra3[i]>0 Then Spectra3[i]-=1
+		
+		If Spectra1[i]<0 Then Spectra1[i]=0
+		If Spectra2[i]<0 Then Spectra2[i]=0
+		If Spectra3[i]<0 Then Spectra3[i]=0
+	End
+
+End
+
+' Vumeter
+Method DrawVumeter01(x:Int,y:Int) '---------------- DRAW VUMETER1 METHOD
+
+	SetColor(Int(VumeterTint[0]),Int(VumeterTint[1]),Int(VumeterTint[2]))	' TintColor
+	DrawImageRect(Vumeter,x,y+Int( drop01*(47.0/64.0) ),0,Int( drop01*(47.0/64.0) ),10,47.0-Int( drop01*(47.0/64.0) ))
+
+	If ChanMute01=0
+	If PlayMode=1 And tracks01[tpos+(patterns[ppos]*64)]>0 And VVolume01>0 And Trigger Then drop01=64.0-Float(VVolume01)
+	Endif
+	
+	drop01+=1.5
+	If drop01>63.0 Then drop01=63.0  
+	
+End
+Method DrawVumeter02(x:Int,y:Int) '---------------- DRAW VUMETER2 METHOD
+	
+	SetColor(Int(VumeterTint[0]),Int(VumeterTint[1]),Int(VumeterTint[2]))	' TintColor	
+	DrawImageRect(Vumeter,x,y+Int( drop02*(47.0/64.0) ),0,Int( drop02*(47.0/64.0) ),10,47.0-Int( drop02*(47.0/64.0) ))
+	
+	If ChanMute02=0
+	If PlayMode=1 And tracks02[tpos+(patterns[ppos]*64)]>0  And VVolume02>0 And Trigger Then drop02=64.0-Float(VVolume02)
+	Endif
+	
+	drop02+=1.5
+	If drop02>63.0 Then drop02=63.0
+	
+End
+Method DrawVumeter03(x:Int,y:Int) '---------------- DRAW VUMETER3 METHOD 
+	
+	SetColor(Int(VumeterTint[0]),Int(VumeterTint[1]),Int(VumeterTint[2]))	' TintColor	
+	DrawImageRect(Vumeter,x,y+Int( drop03*(47.0/64.0) ),0,Int( drop03*(47.0/64.0) ),10,47.0-Int( drop03*(47.0/64.0) ))
+	
+	If ChanMute03=0
+	If PlayMode=1 And tracks03[tpos+(patterns[ppos]*64)]>0 And VVolume03>0 And Trigger Then drop03=64.0-Float(VVolume03)
+	Endif
+	
+	drop03+=1.5
+	If drop03>63.0 Then drop03=63.0
+	
+End
+Method DrawVumeter04(x:Int,y:Int) '---------------- DRAW VUMETER4 METHOD
+	
+	SetColor(Int(VumeterTint[0]),Int(VumeterTint[1]),Int(VumeterTint[2]))	' TintColor	
+	DrawImageRect(Vumeter,x,y+Int( drop04*(47/64.0) ),0,Int( drop04*(47.0/64.0) ),10,47.0-Int( drop04*(47.0/64.0) ))
+	
+	If ChanMute04=0
+	If PlayMode=1 And tracks04[tpos+(patterns[ppos]*64)]>0 And VVolume04>0 And Trigger Then drop04=64.0-Float(VVolume04)
+	Endif
+	
+	drop04+=1.5
+	If drop04>63.0 Then drop04=63.0
+	
+End
+
+Method DisplayNote:String(tra:Int[],trx:Int,pat:Int) '---------------- DISPLAY NOTES METHOD
+Local trk_note:String
+pat=pat*64
+
+If tra[trx+pat]=0
+	trk_note="---"
+Else
+
+	If tra[trx+pat]>12 And tra[trx+pat]<49
+		trk_note=PeriodNote[48-tra[trx+pat]]
+	Else
+		trk_note="---"'???
+	Endif
+	
+Endif
+
+Return trk_note
+
+End
+
+' Oscilloscope test
+Method DrawScope01(osc_x:Int,osc_y:Int)
+
+'Local SampleEnd:Int=0
+
+	If PlayMode=0
+		cinst01=0
+		scope_scroll01=0
+		ht01=0
+	Endif
+	
+	' Get Current Instrument & period
+	If tracks01[tpos+(patterns[ppos]*64)] And Trigger And tracks_fx01[tpos+(patterns[ppos]*64)]<>3 '>0 And tracks_inst01[tpos+(patterns[ppos]*64)]<32
+	If tracks_inst01[tpos+(patterns[ppos]*64)]>0 Then cinst01=tracks_inst01[tpos+(patterns[ppos]*64)]
+		cperiod01=tracks01[tpos+(patterns[ppos]*64)]
+		scope_scroll01=0
+		SampledataRaw01=Sampledata[cinst01]
+		SampleEnd01=0
+	Endif
+	
+	scope_quant01=scope_scroll01
+	
+	' Get Sampledata	
+	For Local cpixel=0 To 79'39
+
+			If PlayMode=0 Or ChanMute01=1
+			ht01=0
+			Else
+			If SampleEnd01=0 Then ht01 = SampledataRaw01[ scope_scroll01/2 + scope_quant01*0.5 ]' Get Sampledata
+			'If SampleEnd=0 Then ht01 = SampledataRaw01[ scope_scroll01/4 + scope_quant01*0.75 ] if its quadrascope
+			Endif
+			
+		If ht01>255 Then ht01=255
+		If ht01<0 Then ht01=0
+		If ht01>127 Then ht01=ht01-256' Make it signed
+		ht01=ht01*-1
+
+	SetColor(Int(WaveColor[0]),Int(WaveColor[1]),Int(WaveColor[2]))' WaveVolor
+		'If ht01<>0
+		
+				'DrawRect(osc_x+cpixel,16+osc_y+ (ht01/8) * Float(Volume01/64) ,1,-(ht01/8) * Float(Volume01/64))
+		'Else
+				DrawRect(osc_x+cpixel,16+osc_y+ (ht01/8) * Float(Volume01/64) ,1,1)
+		'endif
+
+		scope_scroll01+=Pow(1.059463094,cperiod01-12-(PitchVal01/36)+(GlideVal01/36)+FinetuneValue(finetune[cinst01]))'(7093789.2  / (2 * cperiod01))/2048
+		'scope_scroll01+=Pow(1.059463094,cperiod01+PitchVal01+FinetuneValue(finetune[cinst01])) if its quadrascope
+		
+		If  samplereplen[cinst01]>2
+		
+			If scope_scroll01>samplerepeat[cinst01]+samplereplen[cinst01] Then scope_scroll01=samplerepeat[cinst01]
+
+		else
+			
+			If scope_scroll01>samplelength[cinst01]
+				scope_scroll01=samplelength[cinst01]
+				SampleEnd01=1
+				ht01=0
+			Endif
+		
+		endif
+		
+	Next
+
+End
+
+' Scope2
+Method DrawScope02(osc_x:Int,osc_y:Int)
+
+'Local SampleEnd:Int=0
+
+	If PlayMode=0
+		cinst02=0
+		scope_scroll02=0
+		ht02=0
+	endif
+	
+	' Get Current Instrument & period
+	If tracks02[tpos+(patterns[ppos]*64)] And Trigger And tracks_fx02[tpos+(patterns[ppos]*64)]<>3 '>0 And tracks_inst02[tpos+(patterns[ppos]*64)]<32
+	If tracks_inst02[tpos+(patterns[ppos]*64)]>0 Then cinst02=tracks_inst02[tpos+(patterns[ppos]*64)]
+		cperiod02=tracks02[tpos+(patterns[ppos]*64)]
+		scope_scroll02=0
+		SampledataRaw02=Sampledata[cinst02]
+		SampleEnd02=0
+	Endif
+	
+	scope_quant02=scope_scroll02
+
+	' Get Sampledata	
+	For Local cpixel=0 To 79
+		
+			If PlayMode=0 Or ChanMute02=1
+			ht02=0
+			Else
+			If SampleEnd02=0 Then ht02 = SampledataRaw02[ scope_scroll02/2 + scope_quant02*0.5 ]' Get Sampledata
+			endif
+			
+		If ht02>255 Then ht02=255
+		If ht02<0 Then ht02=0
+		If ht02>127 Then ht02=ht02-256' Make it signed
+		ht02=ht02*-1
+			
+	SetColor(Int(WaveColor[0]),Int(WaveColor[1]),Int(WaveColor[2]))' WaveVolor
+		'If ht02<>0
+		
+				'DrawRect(osc_x+cpixel,16+osc_y+ (ht02/8) * Float(Volume02/64) ,1,-(ht02/8) * Float(Volume02/64))
+		'Else
+				DrawRect(osc_x+cpixel,16+osc_y+ (ht02/8) * Float(Volume02/64) ,1,1)
+		'endif
+	
+		scope_scroll02+=Pow(1.059463094,cperiod02-12-(PitchVal02/36)+(GlideVal02/36)+FinetuneValue(finetune[cinst02]))
+	
+		If  samplereplen[cinst02]>2
+		
+			If scope_scroll02>samplerepeat[cinst02]+samplereplen[cinst02] Then scope_scroll02=samplerepeat[cinst02]
+
+		else
+			
+			If scope_scroll02>samplelength[cinst02]
+				scope_scroll02=samplelength[cinst02]
+				SampleEnd02=1
+				ht02=0
+			Endif
+		
+		Endif
+		
+	Next
+
+End
+
+' Scope3
+Method DrawScope03(osc_x:Int,osc_y:Int)
+
+'Local SampleEnd:Int=0
+
+	If PlayMode=0
+		cinst03=0
+		scope_scroll03=0
+		ht03=0
+	endif
+	
+	' Get Current Instrument & period
+	If tracks03[tpos+(patterns[ppos]*64)] And Trigger And tracks_fx03[tpos+(patterns[ppos]*64)]<>3'>0 And tracks_inst03[tpos+(patterns[ppos]*64)]<32
+	If tracks_inst03[tpos+(patterns[ppos]*64)]>0 Then cinst03=tracks_inst03[tpos+(patterns[ppos]*64)]
+		cperiod03=tracks03[tpos+(patterns[ppos]*64)]
+		scope_scroll03=0
+		SampledataRaw03=Sampledata[cinst03]
+		SampleEnd03=0
+	Endif
+	
+	scope_quant03=scope_scroll03
+
+	' Get Sampledata	
+	For Local cpixel=0 To 79
+		
+			If PlayMode=0 Or ChanMute03=1
+			ht03=0
+			Else
+			If SampleEnd03=0 Then ht03 = SampledataRaw03[ scope_scroll03/2 + scope_quant03*0.5 ]' Get Sampledata
+			Endif
+			
+		If ht03>255 Then ht03=255
+		If ht03<0 Then ht03=0
+		If ht03>127 Then ht03=ht03-256' Make it signed
+		ht03=ht03*-1
+		
+	SetColor(Int(WaveColor[0]),Int(WaveColor[1]),Int(WaveColor[2]))' WaveVolor
+		'If ht03<>0
+		
+				'DrawRect(osc_x+cpixel,16+osc_y+ (ht03/8) * Float(Volume03/64) ,1,-(ht03/8) * Float(Volume03/64))
+		'Else
+				DrawRect(osc_x+cpixel,16+osc_y+ (ht03/8) * Float(Volume03/64) ,1,1)
+		'endif
+
+		scope_scroll03+=Pow(1.059463094,cperiod03-12-(PitchVal03/36)+(GlideVal03/36)+FinetuneValue(finetune[cinst03]))
+	
+		If  samplereplen[cinst03]>2
+		
+			If scope_scroll03>samplerepeat[cinst03]+samplereplen[cinst03] Then scope_scroll03=samplerepeat[cinst03]
+
+		Else
+			
+			If scope_scroll03>samplelength[cinst03]
+				scope_scroll03=samplelength[cinst03]
+				SampleEnd03=1
+				ht03=0
+			Endif
+		
+		Endif
+	
+	Next
+
+End
+
+' Scope4
+Method DrawScope04(osc_x:Int,osc_y:Int)
+
+'Local SampleEnd:Int=0
+
+	If PlayMode=0
+		cinst04=0
+		scope_scroll04=0
+		ht04=0
+	Endif
+	
+	' Get Current Instrument & period
+	If tracks04[tpos+(patterns[ppos]*64)] And Trigger And tracks_fx04[tpos+(patterns[ppos]*64)]<>3 '>0 And tracks_inst04[tpos+(patterns[ppos]*64)]<32
+	If tracks_inst04[tpos+(patterns[ppos]*64)]>0 Then cinst04=tracks_inst04[tpos+(patterns[ppos]*64)]
+		cperiod04=tracks04[tpos+(patterns[ppos]*64)]
+		scope_scroll04=0
+		SampledataRaw04=Sampledata[cinst04]
+		SampleEnd04=0
+	Endif
+	
+	scope_quant04=scope_scroll04
+
+	' Get Sampledata	
+	For Local cpixel=0 To 79
+		
+			If PlayMode=0 Or ChanMute04=1
+			ht04=0
+			Else
+			If SampleEnd04=0 Then ht04 = SampledataRaw04[ scope_scroll04/2 + scope_quant04*0.5 ]' Get Sampledata
+			endif
+			
+		If ht04>255 Then ht04=255
+		If ht04<0 Then ht04=0
+		If ht04>127 Then ht04=ht04-256' Make it signed
+		ht04=ht04*-1
+		
+	SetColor(Int(WaveColor[0]),Int(WaveColor[1]),Int(WaveColor[2]))' WaveVolor
+		'If ht04<>0
+		
+				'DrawRect(osc_x+cpixel,16+osc_y+ (ht04/8) * Float(Volume04/64) ,1,-(ht04/8) * Float(Volume04/64))
+		'Else
+				DrawRect(osc_x+cpixel,16+osc_y+ (ht04/8) * Float(Volume04/64) ,1,1)
+		'endif
+	
+		scope_scroll04+=Pow(1.059463094,cperiod04-12-(PitchVal04/36)+(GlideVal04/36)+FinetuneValue(finetune[cinst04]))
+	
+		If  samplereplen[cinst04]>2
+		
+			If scope_scroll04>samplerepeat[cinst04]+samplereplen[cinst04] Then scope_scroll04=samplerepeat[cinst04]
+			
+
+		else
+			
+			If scope_scroll04>samplelength[cinst04]
+				scope_scroll04=samplelength[cinst04]
+				SampleEnd04=1
+				ht04=0
+			Endif
+		
+		endif
+		
+	Next
+
+End
+
+Method SampleDisplay() ' -------------------------------- MiniSampler
+
+SetColor(Int(BackColor[0]),Int(BackColor[1]),Int(BackColor[2])) ' BackColor
+DrawRect(120,44,200,55)
+SetColor(255,255,255)
+DrawImage(SampDisplay,120,44)
+
+Local ht:Float
+Local CLength:Float=samplelength[CurrentInst]
+Local CRepeat:Float=samplerepeat[CurrentInst]
+Local CReplen:Float=samplereplen[CurrentInst]
+'Local CPointer:Int
+
+' Sample Display Zoom
+'If MZ=1 Then zoom+=1
+'If MZ=-1 Then zoom-=1
+'If zoom>CLength/187 Then zoom=CLength/187
+'If zoom<0 Then zoom=0
+
+	For Local gd:Float=0 To 186*8
+
+
+			ht = Sampledata[CurrentInst][ (CLength/187)*(gd/8) ]
+	
+		If ht>255 Then ht=255
+		If ht<0 Then ht=0
+		If ht>127 Then ht=ht-256
+		ht=ht*-1
+
+	SetColor(Int(WaveColor[0]),Int(WaveColor[1]),Int(WaveColor[2]))' WaveVolor
+	DrawRect(127+(gd/8),55+16+(ht/6),1,1-(ht/6))
+
+	Next
+	
+	' Repeat + Replen Positions
+	If CReplen>2
+	SetColor(68,192,0)' Green Marks
+	DrawRect(127+(187/CLength)*(CRepeat/187)*187,50,1,43)
+	DrawRect(127+(187/CLength)*((CRepeat+CReplen)/187)*187,50,1,43)
+	Endif
+	
+	' Pointer Scroller
+	If tracks_inst01[tpos+(patterns[ppos]*64)]=CurrentInst And Trigger And tracks_fx01[tpos+(patterns[ppos]*64)]<>3
+	PScroll=0
+	cperiodc=tracks01[tpos+(patterns[ppos]*64)]
+	Endif
+	If tracks_inst02[tpos+(patterns[ppos]*64)]=CurrentInst And Trigger And tracks_fx02[tpos+(patterns[ppos]*64)]<>3
+	PScroll=0
+	cperiodc=tracks02[tpos+(patterns[ppos]*64)]
+	Endif
+	If tracks_inst03[tpos+(patterns[ppos]*64)]=CurrentInst And Trigger And tracks_fx03[tpos+(patterns[ppos]*64)]<>3
+	PScroll=0
+	cperiodc=tracks03[tpos+(patterns[ppos]*64)]
+	Endif
+	If tracks_inst04[tpos+(patterns[ppos]*64)]=CurrentInst And Trigger And tracks_fx04[tpos+(patterns[ppos]*64)]<>3
+	PScroll=0
+	cperiodc=tracks04[tpos+(patterns[ppos]*64)]
+	Endif
+	SetColor(221,68,0)' Orange Pointer
+	
+	
+		If PlayMode=0 Then PScroll+=(Pow(1.059463094,(PJazz)+FinetuneValue(finetune[CurrentInst]))*(187/CLength)) * 172.5' Keyjazz Scroll
+		If PlayMode=1 Then PScroll+=(Pow(1.059463094,(cperiodc) + FinetuneValue(finetune[CurrentInst]))*(187/CLength)) * 36' Track Scroll
+
+		If PScroll < 187 Then DrawRect(127+PScroll,50,1,43)
+		If PScroll > (187/CLength)*((CRepeat+CReplen)/187)*187 And CReplen>2 Then PScroll=(187/CLength)*(CRepeat/187)*187
+	
+
+end
+
+Method SaveMod:String(fname:String,WFile:Int) ' InMem = 1 no filesaving, replaxing ModfileData!
+
+	SavedModfile=""
+	
+	Local pa:Int
+	Local pb:Int
+	Local Desc:String
+	
+	Local notedata1:Float
+	Local notedata2:Float
+
+	Local b3:Float
+	Local b4:Float
+	
+	Local instbyte_upper:int
+
+	Local rpattlength:Int
+	
+	Local CharA:Int
+	
+	Local prd:Int
+	
+	Local SaveSampleData:String
+		
+	'Title
+	SavedModfile+=songname[0..20]
+	
+	's4=20
+	For Local i = 0 To 30
+	
+	's4=20+(i*30)
+	Desc=instdesc[1+i]
+	SavedModfile+=Desc[0..22]
+	
+	CharA=Int( Int(samplelength[1+i]/512))
+	SavedModfile+=String.FromChar(Int(CharA))
+	
+	
+	CharA=Int(samplelength[1+i]/2)
+	SavedModfile+=String.FromChar(Int(CharA))
+
+	CharA=Int(finetune[1+i])
+	SavedModfile+=String.FromChar(Int(CharA))
+	
+	CharA=Int(samplevolume[1+i])
+	SavedModfile+=String.FromChar(Int(CharA))
+
+	CharA=Int( Int(samplerepeat[1+i]/512))
+	SavedModfile+=String.FromChar(Int(CharA))
+	
+	CharA=Int(samplerepeat[1+i]/2)
+	SavedModfile+=String.FromChar(Int(CharA))
+
+	CharA=Int(samplereplen[1+i]/512)
+	SavedModfile+=String.FromChar(Int(CharA))
+
+	CharA=Int( Int(samplereplen[1+i]/2))
+	SavedModfile+=String.FromChar(Int(CharA))
+	
+	SaveSampleData+=Sampledata[1+i][0..samplelength[1+i]]
+	
+	Next
+
+	SavedModfile+=String.FromChar(Songlength)
+	SavedModfile+=String.FromChar(127)
+	
+	For Local i=0 To 127
+	SavedModfile+=String.FromChar(patterns[i])
+	
+		pa=patterns[i]
+		If pa>pb Then pb=pa
+	Next
+	
+	SavedModfile+="M.K."
+	
+	pattlength=pb
+	For Local pos=0 To pattlength
+
+
+	For Local i=0 To 63
+	
+	' ---------------------------- Channel01
+	instbyte_upper=0
+	prd=0
+	If tracks_inst01[(64*pos)+i]>15 Then instbyte_upper=16
+	prd=48-tracks01[(64*pos)+i]
+
+	If tracks01[(64*pos)+i]
+	notedata1 = instbyte_upper + UDump[prd]
+	notedata2 = DDump[prd]
+	Else
+	notedata1 = instbyte_upper + 0
+	notedata2 = 0
+	endif
+		   b3 = Int(tracks_inst01[(64*pos)+i])*16 + Int(tracks_fx01[(64*pos)+i]) 
+		   b4 = Int(tracks_fx201[(64*pos)+i])
+		   
+	SavedModfile+=String.FromChar(notedata1)
+	SavedModfile+=String.FromChar(notedata2)
+	SavedModfile+=String.FromChar(b3)
+	SavedModfile+=String.FromChar(b4)
+	'----------------------------------------
+	
+		' ---------------------------- Channel02
+	instbyte_upper=0
+	prd=0
+	If tracks_inst02[(64*pos)+i]>15 Then instbyte_upper=16
+	prd=48-tracks02[(64*pos)+i]
+
+	If tracks02[(64*pos)+i]
+	notedata1 = instbyte_upper + UDump[prd]
+	notedata2 = DDump[prd]
+	Else
+	notedata1 = instbyte_upper + 0
+	notedata2 = 0
+	endif
+		   b3 = Int(tracks_inst02[(64*pos)+i])*16 + Int(tracks_fx02[(64*pos)+i]) 
+		   b4 = Int(tracks_fx202[(64*pos)+i])
+		   
+	SavedModfile+=String.FromChar(notedata1)
+	SavedModfile+=String.FromChar(notedata2)
+	SavedModfile+=String.FromChar(b3)
+	SavedModfile+=String.FromChar(b4)
+	'----------------------------------------
+	
+			' ---------------------------- Channel03
+	instbyte_upper=0
+	prd=0
+	If tracks_inst03[(64*pos)+i]>15 Then instbyte_upper=16
+	prd=48-tracks03[(64*pos)+i]
+
+	If tracks03[(64*pos)+i]
+	notedata1 = instbyte_upper + UDump[prd]
+	notedata2 = DDump[prd]
+	Else
+	notedata1 = instbyte_upper + 0
+	notedata2 = 0	
+	endif
+		   b3 = Int(tracks_inst03[(64*pos)+i])*16 + Int(tracks_fx03[(64*pos)+i]) 
+		   b4 = Int(tracks_fx203[(64*pos)+i])
+		   
+	SavedModfile+=String.FromChar(notedata1)
+	SavedModfile+=String.FromChar(notedata2)
+	SavedModfile+=String.FromChar(b3)
+	SavedModfile+=String.FromChar(b4)
+	'----------------------------------------
+	
+			' ---------------------------- Channel04
+	instbyte_upper=0
+	prd=0
+	If tracks_inst04[(64*pos)+i]>15 Then instbyte_upper=16
+	prd=48-tracks04[(64*pos)+i]
+	
+	If tracks04[(64*pos)+i]
+	notedata1 = instbyte_upper + UDump[prd]
+	notedata2 = DDump[prd]
+	Else
+	notedata1 = instbyte_upper + 0
+	notedata2 = 0	
+	endif
+		   b3 = Int(tracks_inst04[(64*pos)+i])*16 + Int(tracks_fx04[(64*pos)+i]) 
+		   b4 = Int(tracks_fx204[(64*pos)+i])
+		   
+	SavedModfile+=String.FromChar(notedata1)
+	SavedModfile+=String.FromChar(notedata2)
+	SavedModfile+=String.FromChar(b3)
+	SavedModfile+=String.FromChar(b4)
+	'----------------------------------------
+				
+	Next
+	
+	next
+	
+		s4=1084+((rpattlength+1)*1024)
+		
+		' Samples go here
+		
+		SavedModfile+=SaveSampleData
+		ModfileData=SavedModfile'Replacing current ModfileData
+		
+		If WFile=1 Then SaveBinary(SavedModfile,fname,SavedModfile.Length)' Writing file
+End
+
+Method CleanPatterns()
+	Local clean:Int[255]
+	patterns=clean
+	Songlength=1
+	
+		' Cleanup
+	For Local c=0 To 8192
+
+tracks01[c]=0
+tracks02[c]=0
+tracks03[c]=0
+tracks04[c]=0
+
+tracks_inst01[c]=0
+tracks_inst02[c]=0
+tracks_inst03[c]=0
+tracks_inst04[c]=0
+	
+tracks_fx01[c]=0
+tracks_fx02[c]=0
+tracks_fx03[c]=0
+tracks_fx04[c]=0
+	
+tracks_fx201[c]=0
+tracks_fx202[c]=0
+tracks_fx203[c]=0
+tracks_fx204[c]=0
+	next
+End
+
+Method CleanSamples()
+
+	' Clean Samples
+	For Local i=1 To 31
+		instdesc[i]=""
+		samplevolume[i]=64
+		samplelength[i]=0
+		samplerepeat[i]=0
+		samplereplen[i]=2
+		instdesc[i]=""
+		instdesc[i]=FillSpace(instdesc[i],21)' Fill with Zeros by leaving
+		Sampledata[i]=""
+		finetune[i]=0
+		Samples=ClearSound
+		Samples_looped=ClearSound
+	End
+
+end
+
+Method LoadMod() '---------------- SLK-MOD LOADER !
+
+	Local notedata1:Float
+	Local notedata2:Float
+
+	Local b3:Float
+	Local b4:Float
+	
+	Local pa:Int
+	Local pb:Int
+	
+' Load Songname
+songname=ModfileData[0..20]
+	
+
+
+	'For Local i=0 To 255
+		'If patterns[i]<1 Then 
+		'patterns[i]=0
+	'Next
+
+
+
+' Read Songlength
+	'SeekFile(fileout,950)
+	'Songlength='ReadBytes
+	
+	' SampleDescription and Values
+	s4=20
+	for Local i = 0 To 30
+		
+			instdesc[1+i]=ModfileData[s4+(i*30)..s4+(i*30)+22]
+			samplelength[1+i]=(ModfileData[s4+(i*30)+22]*512)+(ModfileData[s4+(i*30)+23]*2)	
+			finetune[1+i]=ModfileData[s4+(i*30)+24]
+			samplevolume[1+i]=ModfileData[s4+(i*30)+25]
+			samplerepeat[1+i]=(ModfileData[s4+(i*30)+26]*512)+(ModfileData[s4+(i*30)+27]*2)
+			samplereplen[1+i]=(ModfileData[s4+(i*30)+28]*512)+(ModfileData[s4+(i*30)+29]*2)
+	
+	Next
+	
+	
+'get patternlength
+For Local i=0 To 127
+
+'Pseek	
+	patterns[i]=ModfileData[Pseek+i]
+	pa=ModfileData[Pseek+i]
+	If pa>pb Then pb=pa	
+
+Next
+
+
+
+pattlength=pb
+Print "Patternlength: "+pattlength
+
+Songlength=ModfileData[950]
+Print "Songlength: "+Songlength
+
+'Local fvalue:Float
+
+' Read Tracks
+s4=Dseek
+For ppos=0 To pattlength
+
+
+For Local i=0 To 63
+
+' Channel01
+	notedata1=ModfileData[s4]
+	notedata2=ModfileData[s4+1]
+	b3=ModfileData[s4+2] 
+	b4=ModfileData[s4+3]
+	s4+=4
+		
+		tracks_inst01[(64*ppos)+i]=Int(notedata1/16)*16 + Int(b3/16)
+		tracks_fx01[(64*ppos)+i]=b3-Int(b3/16)*16	
+		tracks_fx201[(64*ppos)+i]=b4
+		
+		'If tracks_fx01[(64*ppos)+i]=15 And tracks_fx201[(64*ppos)+i]>31
+		'tracks_fx01[(64*ppos)+i]=0
+		'tracks_fx201[(64*ppos)+i]=0
+		'endif
+		
+	tracks01[(64*ppos)+i]=0 ' Clear
+	
+	For Local dcount=0 To 35' Finetune Included
+		If (notedata1 - Int(notedata1/16)*16) Shl 8 + Int(notedata2) = PeriodTable[dcount]
+			tracks01[(64*ppos)+i]=PeriodByte[dcount]
+		Endif
+	Next
+
+	
+
+
+' ------------------------------------
+		
+' Channel02
+	notedata1=ModfileData[s4]
+	notedata2=ModfileData[s4+1]
+	b3=ModfileData[s4+2] 
+	b4=ModfileData[s4+3]
+	s4+=4
+	
+		tracks_inst02[(64*ppos)+i]=Int(notedata1/16)*16 + Int(b3/16)
+		tracks_fx02[(64*ppos)+i]=b3-Int(b3/16)*16	
+		tracks_fx202[(64*ppos)+i]=b4
+
+		'If tracks_fx02[(64*ppos)+i]=15 And tracks_fx202[(64*ppos)+i]>31
+		'tracks_fx02[(64*ppos)+i]=0
+		'tracks_fx202[(64*ppos)+i]=0
+		'endif
+	
+	tracks02[(64*ppos)+i]=0 ' Clear
+		
+	For Local dcount=0 To 35
+		If (notedata1 - Int(notedata1/16)*16) Shl 8 + Int(notedata2) = PeriodTable[dcount]
+			tracks02[(64*ppos)+i]=PeriodByte[dcount]
+		Endif
+	Next
+
+
+
+
+' ------------------------------------
+		
+' Channel03
+	notedata1=ModfileData[s4]
+	notedata2=ModfileData[s4+1]
+	b3=ModfileData[s4+2] 
+	b4=ModfileData[s4+3]
+	s4+=4
+
+		tracks_inst03[(64*ppos)+i]=Int(notedata1/16)*16 + Int(b3/16)
+		tracks_fx03[(64*ppos)+i]=b3-Int(b3/16)*16	
+		tracks_fx203[(64*ppos)+i]=b4
+
+
+		'If tracks_fx03[(64*ppos)+i]=15 And tracks_fx203[(64*ppos)+i]>31
+		'tracks_fx03[(64*ppos)+i]=0
+		'tracks_fx203[(64*ppos)+i]=0
+		'endif
+	
+	tracks03[(64*ppos)+i]=0 ' Clear	
+	
+	For Local dcount=0 To 35
+		If (notedata1 - Int(notedata1/16)*16) Shl 8 + Int(notedata2) = PeriodTable[dcount]
+			tracks03[(64*ppos)+i]=PeriodByte[dcount]
+		Endif
+	Next
+
+
+
+
+' ------------------------------------
+
+' Channel04
+	notedata1=ModfileData[s4]
+	notedata2=ModfileData[s4+1]
+	b3=ModfileData[s4+2] 
+	b4=ModfileData[s4+3]
+	s4+=4
+	
+		tracks_inst04[(64*ppos)+i]=Int(notedata1/16)*16 + Int(b3/16)
+		tracks_fx04[(64*ppos)+i]=b3-Int(b3/16)*16	
+		tracks_fx204[(64*ppos)+i]=b4
+		
+		'If tracks_fx04[(64*ppos)+i]=15 And tracks_fx204[(64*ppos)+i]>31
+		'tracks_fx04[(64*ppos)+i]=0
+		'tracks_fx204[(64*ppos)+i]=0
+		'endif
+	
+	tracks04[(64*ppos)+i]=0 ' Clear
+	
+	For Local dcount=0 To 35
+		If (notedata1 - Int(notedata1/16)*16) Shl 8 + Int(notedata2) = PeriodTable[dcount]
+			tracks04[(64*ppos)+i]=PeriodByte[dcount]
+		Endif
+	Next
+
+
+	' ------------------------------------			
+	
+
+
+Next
+Next
+
+
+' Sampledata
+data_offset=1084+((pattlength+1)*1024)
+lastlength=0
+Sampledata[0]=""
+
+      For Local i=1 To 31
+      
+      		Sampledata[i]="" ' Clear
+        	Sampledata[i]=ModfileData[ data_offset + lastlength .. data_offset + lastlength + samplelength[i] ]
+			lastlength+=samplelength[i]
+
+               'If samplelength[i] Then 
+               LoadSample(i)' Load Raw to Wav Samples
+        Next
+
+
+End
+
+Method LoadBackSamples()
+
+' Replacing ModfileData to current
+SaveMod("",0)
+
+' Sampledata
+data_offset=1084+((pattlength+1)*1024)
+lastlength=0
+Sampledata[0]=""
+
+      For Local i=1 To 31
+      
+      		Sampledata[i]="" ' Clear
+        	Sampledata[i]=ModfileData[ data_offset + lastlength .. data_offset + lastlength + samplelength[i] ]
+			lastlength+=samplelength[i]
+
+               'If samplelength[i] Then 
+               LoadSample(i)' Load Raw to Wav Samples
+        Next
+End
+
+Method LoadSample:Int(snum:Int)
+
+Local hibyte:String
+Local lobyte:String=String.FromChar(0)+String.FromChar(0)
+
+If samplerepeat[snum]>0
+'Print "laola"
+	'- Raw2Wav
+	'hibyte=String.FromChar(samplerepeat[snum])+String.FromChar((samplerepeat[snum]/512)*2)
+		'SaveWave(waveheader+hibyte+lobyte,Sampledata[snum],"cerberus://data/tmp.wav",0,samplerepeat[snum])
+		'Samples[snum]=LoadSound("cerberus://data/tmp.wav")
+	'- Raw2Wav
+	hibyte=String.FromChar(samplerepeat[snum]+samplereplen[snum])+String.FromChar(((samplerepeat[snum]+samplereplen[snum])/256))
+		SaveWave(waveheader+hibyte+lobyte,Sampledata[snum],"cerberus://data/tmp.wav",0,samplerepeat[snum]+samplereplen[snum])
+		Samples[snum]=LoadSound("cerberus://data/tmp.wav")
+
+	'- Raw2Wav
+	hibyte=String.FromChar(samplereplen[snum])+String.FromChar((samplereplen[snum]/256))
+		SaveWave(waveheader+hibyte+lobyte,Sampledata[snum],"cerberus://data/tmp.wav",samplerepeat[snum],samplerepeat[snum]+samplereplen[snum])
+		Samples_looped[snum]=LoadSound("cerberus://data/tmp.wav")
+Else
+
+	'- Raw2Wav
+	hibyte=String.FromChar(samplelength[snum])+String.FromChar((samplelength[snum]/256))
+		SaveWave(waveheader+hibyte+lobyte,Sampledata[snum],"cerberus://data/tmp.wav",0,samplelength[snum])
+		Samples[snum]=LoadSound("cerberus://data/tmp.wav")
+		
+	'- Raw2Wav
+	hibyte=String.FromChar(samplereplen[snum])+String.FromChar((samplereplen[snum]/256))
+		SaveWave(waveheader+hibyte+lobyte,Sampledata[snum],"cerberus://data/tmp.wav",samplerepeat[snum],samplerepeat[snum]+samplereplen[snum])
+		Samples_looped[snum]=LoadSound("cerberus://data/tmp.wav")
+Endif
+
+End
+
+Method StopAll()
+	Sample_Looped_Trigger=0
+	Sample_Looped_Trigger_01=0
+	Sample_Looped_Trigger_02=0
+	Sample_Looped_Trigger_03=0
+	Sample_Looped_Trigger_04=0
+	StopChannel(0)
+	StopChannel(1)
+	StopChannel(2)
+	StopChannel(3)
+	StopChannel(4)
+	StopChannel(5)
+	StopChannel(6)
+	StopChannel(7)
+End
+
+' Get Config Data Etc.
+Method GetConfig()
+' Get Configfile
+Config=mojo.LoadString("config.ini")
+Config=Config.Replace(String.FromChar(10),"")
+Config=Config.Replace(String.FromChar(13),"")
+Config=Config.Replace(" ","")
+' Split Data
+ConfigData=Config.Split(";")
+scl=Int(ConfigData[0])
+GuiColor01=ConfigData[1].Split(",")
+GuiColor02=ConfigData[2].Split(",")
+GuiColor03=ConfigData[3].Split(",")
+FontColor01=ConfigData[4].Split(",")
+FontColor02=ConfigData[5].Split(",")
+WaveColor=ConfigData[6].Split(",")
+BackColor=ConfigData[7].Split(",")
+VumeterTint=ConfigData[8].Split(",")
+' Custom GuiColor/BMP's
+Local tempdata:String
+tempdata=mojo.LoadString("background2b.bmp")
+tempdata=tempdata.Replace("OOO",String.FromChar(Int(GuiColor01[2]))+String.FromChar(Int(GuiColor01[1]))+String.FromChar(Int(GuiColor01[0])))' GuiColor1R
+tempdata=tempdata.Replace("nnn",String.FromChar(Int(GuiColor02[2]))+String.FromChar(Int(GuiColor02[1]))+String.FromChar(Int(GuiColor02[0])))' GuiColor1G
+tempdata=tempdata.Replace("222",String.FromChar(Int(GuiColor03[2]))+String.FromChar(Int(GuiColor03[1]))+String.FromChar(Int(GuiColor03[0])))' GuiColor1B
+SaveBinary(tempdata,"data/BG000.DAT",tempdata.Length)
+Background=LoadImage("BG000.DAT")
+'--------------------------------------------
+tempdata=mojo.LoadString("samp_display2.bmp")
+tempdata=tempdata.Replace("OOO",String.FromChar(Int(GuiColor01[2]))+String.FromChar(Int(GuiColor01[1]))+String.FromChar(Int(GuiColor01[0])))' GuiColor1R
+tempdata=tempdata.Replace("nnn",String.FromChar(Int(GuiColor02[2]))+String.FromChar(Int(GuiColor02[1]))+String.FromChar(Int(GuiColor02[0])))' GuiColor1G
+tempdata=tempdata.Replace("222",String.FromChar(Int(GuiColor03[2]))+String.FromChar(Int(GuiColor03[1]))+String.FromChar(Int(GuiColor03[0])))' GuiColor1B
+SaveBinary(tempdata,"data/BG000.DAT",tempdata.Length)
+SampDisplay=LoadImage("BG000.DAT")
+'------------------------------------------
+tempdata=mojo.LoadString("mouse_cursor.bmp")
+tempdata=tempdata.Replace("OOO",String.FromChar(Int(GuiColor01[2]))+String.FromChar(Int(GuiColor01[1]))+String.FromChar(Int(GuiColor01[0])))' GuiColor1R
+tempdata=tempdata.Replace("nnn",String.FromChar(Int(GuiColor02[2]))+String.FromChar(Int(GuiColor02[1]))+String.FromChar(Int(GuiColor02[0])))' GuiColor1G
+tempdata=tempdata.Replace("222",String.FromChar(Int(GuiColor03[2]))+String.FromChar(Int(GuiColor03[1]))+String.FromChar(Int(GuiColor03[0])))' GuiColor1B
+SaveBinary(tempdata,"data/BG000.DAT",tempdata.Length)
+Prtmouse=LoadImage("BG000.DAT")
+'------------------------------------------
+tempdata=mojo.LoadString("spectra_back.bmp")
+tempdata=tempdata.Replace("OOO",String.FromChar(Int(GuiColor01[2]))+String.FromChar(Int(GuiColor01[1]))+String.FromChar(Int(GuiColor01[0])))' GuiColor1R
+tempdata=tempdata.Replace("nnn",String.FromChar(Int(GuiColor02[2]))+String.FromChar(Int(GuiColor02[1]))+String.FromChar(Int(GuiColor02[0])))' GuiColor1G
+tempdata=tempdata.Replace("222",String.FromChar(Int(GuiColor03[2]))+String.FromChar(Int(GuiColor03[1]))+String.FromChar(Int(GuiColor03[0])))' GuiColor1B
+SaveBinary(tempdata,"data/BG000.DAT",tempdata.Length)
+SpectraDisplay=LoadImage("BG000.DAT")
+'------------------------------------------
+tempdata=mojo.LoadString("about.bmp")
+tempdata=tempdata.Replace("OOO",String.FromChar(Int(GuiColor01[2]))+String.FromChar(Int(GuiColor01[1]))+String.FromChar(Int(GuiColor01[0])))' GuiColor1R
+tempdata=tempdata.Replace("nnn",String.FromChar(Int(GuiColor02[2]))+String.FromChar(Int(GuiColor02[1]))+String.FromChar(Int(GuiColor02[0])))' GuiColor1G
+tempdata=tempdata.Replace("222",String.FromChar(Int(GuiColor03[2]))+String.FromChar(Int(GuiColor03[1]))+String.FromChar(Int(GuiColor03[0])))' GuiColor1B
+SaveBinary(tempdata,"data/BG000.DAT",tempdata.Length)
+AboutScreen=LoadImage("BG000.DAT")
+'------------------------------------------
+tempdata=mojo.LoadString("clear.bmp")
+tempdata=tempdata.Replace("OOO",String.FromChar(Int(GuiColor01[2]))+String.FromChar(Int(GuiColor01[1]))+String.FromChar(Int(GuiColor01[0])))' GuiColor1R
+tempdata=tempdata.Replace("nnn",String.FromChar(Int(GuiColor02[2]))+String.FromChar(Int(GuiColor02[1]))+String.FromChar(Int(GuiColor02[0])))' GuiColor1G
+tempdata=tempdata.Replace("222",String.FromChar(Int(GuiColor03[2]))+String.FromChar(Int(GuiColor03[1]))+String.FromChar(Int(GuiColor03[0])))' GuiColor1B
+SaveBinary(tempdata,"data/BG000.DAT",tempdata.Length)
+ClearMenu=LoadImage("BG000.DAT")
+'------------------------------------------
+End
+
+Method ButtonZone_Big:Int(xx:Int,yy:Int,scl:int)
+
+	If MouseHit(MOUSE_LEFT) And MX>(xx*scl)+Border*scl And MX<Border*scl+(xx*scl)+(62*scl) And MY>(yy*scl)+Border*scl And MY<Border*scl+(yy*scl)+(11*scl) Then Return 1
+	
+End
+Method ButtonZone_Med:Int(xx:Int,yy:Int,scl:int)
+
+	If MouseHit(MOUSE_LEFT) And MX>(xx*scl)+Border*scl And MX<Border*scl+(xx*scl)+(33*scl) And MY>(yy*scl)+Border*scl And MY<Border*scl+(yy*scl)+(11*scl) Then Return 1
+	
+End
+Method ButtonZone_Small:Int(xx:Int,yy:Int,scl:Int,hold:Int)
+
+	If MouseHit(MOUSE_LEFT) And MX>(xx*scl)+Border*scl And MX<Border*scl+(xx*scl)+(11*scl) And MY>(yy*scl)+Border*scl And MY<Border*scl+(yy*scl)+(11*scl)
+		KeyTime=0
+		Return 1
+	Endif
+	If MouseDown(MOUSE_LEFT) And hold=1 And MX>(xx*scl)+Border*scl And MX<Border*scl+(xx*scl)+(11*scl) And MY>(yy*scl)+Border*scl And MY<Border*scl+(yy*scl)+(11*scl)
+		If KeyTime>5
+			KeyTime=0
+			Return 1
+		Endif
+		KeyTime+=1
+	endif
+	
+End
+
+End
+
+
+
+Function Int2Hex:String(n:Float)
+
+	Local h1:String
+	Local h2:String
+	Local lo:Float
+	
+	If Int(n/16) < 10 Then h1=String( Int(n/16) )
+	If Int(n/16) > 9
+	
+		If Int(n/16) = "10" Then h1="A"
+		If Int(n/16) = "11" Then h1="B"
+		If Int(n/16) = "12" Then h1="C"
+		If Int(n/16) = "13" Then h1="D"
+		If Int(n/16) = "14" Then h1="E"
+		If Int(n/16) = "15" Then h1="F"
+		
+	endif
+	
+	If Int(((n/16)-Int(n/16))*16) < 10 Then h2=Int(((n/16)-Int(n/16))*16)
+	If Int(((n/16)-Int(n/16))*16) > 9
+	
+	
+		If Int(((n/16)-Int(n/16))*16) = "10" Then h2="A"
+		If Int(((n/16)-Int(n/16))*16) = "11" Then h2="B"
+		If Int(((n/16)-Int(n/16))*16) = "12" Then h2="C"
+		If Int(((n/16)-Int(n/16))*16) = "13" Then h2="D"
+		If Int(((n/16)-Int(n/16))*16) = "14" Then h2="E"
+		If Int(((n/16)-Int(n/16))*16) = "15" Then h2="F"
+		
+	Endif
+	
+	Return String(h1)+String(h2)
+
+End
+
+' Advanced Hex
+Function Int2Hex4:String(n:Float)
+
+Local out1:String
+Local out2:String
+Local rest:Int
+Local n_old:int
+
+
+
+	While(n > 0)
+	
+		n_old=n
+		
+		n = n / 16
+	
+		rest = (n_old-16*Int(n))
+	
+	out1+=Int2Hex1(rest)
+	
+	
+	Wend
+	
+If out1
+
+	For Local v=1 To 2
+		out2+=String.FromChar(out1[4-v])
+	Next
+	
+	For Local v=0 To 1
+		out2+=String.FromChar(out1[1-v])
+	Next
+
+Endif
+
+	Return out2
+End
+
+
+' Main Hex
+Function Int2Hex1:String(n:Int)
+
+	Local h:String
+
+	If n<10 Then h=String(n)
+	If n>9
+	
+		If n="10" Then h="A"
+		If n="11" Then h="B"
+		If n="12" Then h="C"
+		If n="13" Then h="D"
+		If n="14" Then h="E"
+		If n="15" Then h="F"
+		
+	endif
+	Return h
+
+End
+
+Function Hex2Int:Int(hi:String)
+
+	If Int(hi) Then Return Int(hi)
+	
+	If hi.ToLower="a" Then Return 10
+	If hi.ToLower="b" Then Return 11
+	If hi.ToLower="c" Then Return 12
+	If hi.ToLower="d" Then Return 13
+	If hi.ToLower="e" Then Return 14
+	If hi.ToLower="f" Then Return 15	
+
+End
+
+' FIllzeros by int
+Function FillZeros:String(nn:Int)
+
+	Local outstring:String="0000"
+	Local numstr:String=String(nn)
+	
+		
+	
+	Return outstring[0..4-numstr.Length]+numstr
+
+End
+
+' Fillzeros by String
+Function FillZeros2:String(nn:string)
+
+	Local outstring:String="0000"
+	Local numstr:String=nn
+	
+		
+	
+	Return outstring[0..4-numstr.Length]+numstr
+
+End
+
+'Fillzeros by String 2
+Function FillZeros3:String(nn:string)
+
+	Local outstring:String="00"
+	Local numstr:String=nn
+	
+		
+	
+	Return outstring[0..2-numstr.Length]+numstr
+
+End
+
+' Fillspace by String
+Function FillSpace:String(m:String,len:int)
+	For Local fill=m.Length-1 To len-1
+		m+="_"
+	Next 
+	Return m
+End
+
+Function SaveWave:String(head:String,Dat:String,flepath:String,spos:Int,l:Int)
+
+	Local file:=FileStream.Open(flepath,"w")
+	Local ht:Int
+	
+	For Local j=0 To 43
+		file.WriteByte(head[j])
+	Next
+	
+	For Local v=spos To l-1	
+	ht=Dat[v]
+	
+		If ht>127 Then file.WriteByte(ht-128) ' Make it signed
+		If ht<128 Then file.WriteByte(ht+128)
+				
+	Next
+	
+	file.Close
+End
+
+Function SaveBinary:String(Dat:String,flepath:String,l:Int)
+
+	Local file:=FileStream.Open(flepath,"w")
+	
+	For Local v=0 To l-1
+	
+		file.WriteByte(Dat[v])
+	Next
+	
+	file.Close
+End
+
+Function LoadWave:String(datas:String)
+
+Local DataOut:String
+
+	For Local i=0 To datas.Length-1
+		If i>43
+			If datas[i]>127 Then DataOut+=String.FromChar(datas[i]-128) ' Change Sign
+			If datas[i]<128 Then DataOut+=String.FromChar(datas[i]+128)
+		Endif
+	Next
+	Return DataOut
+End
+
+Function LoadBinary:String(flepath:String)
+
+	Local file:=FileStream.Open(flepath,"r")
+	Local Datas:String
+	
+	While Not file.Eof
+	
+		Datas+=String.FromChar(file.ReadByte)
+		
+	Wend
+	
+	file.Close
+	
+	Return Datas
+End
+
+Function FinetuneValue:Float(fv:float)
+			
+			If fv<8 Then Return fv*0.125
+			If fv>7 Then Return (16-fv)*-0.125
+			If fv=0 Return 0
+
+End
+
+Function FinetuneDisplay:String(f:Int)
+
+Local s:String
+
+			If f=0 Then s=" 0"
+			If f=1 Then s="+1"
+			If f=2 Then s="+2"
+			If f=3 Then s="+3"		
+			If f=4 Then s="+4"
+			If f=5 Then s="+5"
+			If f=6 Then s="+6"
+			If f=7 Then s="+7"
+			
+			If f=8 Then s="-8"
+			If f=9 Then s="-7"
+			If f=10 Then s="-6"		
+			If f=11 Then s="-5"
+			If f=12 Then s="-4"
+			If f=13 Then s="-3"
+			If f=14 Then s="-2"
+			If f=15 Then s="-1"	
+			
+			Return s				
+End
+
+Function Main:Int()
+        
+		New MyApp
+
+	End
