@@ -24,7 +24,7 @@ Class MyApp Extends App
 	Global tfont3:Font
 	
 	Global Info:String
-	Global Start_Info:Int[]=[$53,$41,$55,$4E,$41,$54,$52,$45,$4b,$4b,$45,$52,$20,$56,$31,$2E,$31,$42]
+	Global Start_Info:Int[]=[$53,$41,$55,$4E,$41,$54,$52,$45,$4b,$4b,$45,$52,$20,$56,$31,$2E,$32,$42]
 	
 	Global octave:Int
 	
