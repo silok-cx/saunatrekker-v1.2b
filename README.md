@@ -77,7 +77,7 @@ EEx - Pattern delay
 --------------------------------
 
 - Stereoscope retrigger bug at first songplay fixed
-- Stereoscope 3xx Retrigegr removed
+- Stereoscope 3xx retrigger removed
 - Sampledisplay retrigger on 3xx removed
  
  
