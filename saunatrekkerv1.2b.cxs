@@ -365,7 +365,7 @@ GetConfig()
 SetDeviceWindow(340*scl,276*scl,4)
 HideMouse()
 
-SetUpdateRate(50.00028194)
+SetUpdateRate(50)
 
 tfont=Font.Load("protracker.png",32,96,False)
 tfont2=Font.Load("protracker_big.png",32,96,False)
@@ -810,6 +810,7 @@ endif
 
 ' Play at Song Position
 If KeyHit(KEY_CONTROL) Or ButtonZone_Big(120,0,scl)' Or ButtonZone_Big(120,11,scl)
+	SetUpdateRate(50)
 	StopAll()' Stop All Sounds
 	framecount=0
 	tpos=0
@@ -823,6 +824,7 @@ Endif
 
 ' Play Pattern only
 If ButtonZone_Big(120,11,scl)
+	SetUpdateRate(50)
 	StopAll()' Stop All Sounds
 	framecount=0
 	tpos=0
@@ -836,6 +838,7 @@ Endif
 
 ' Record Song
 If ButtonZone_Big(120,33,scl)
+	SetUpdateRate(50)
 	StopAll()' Stop All Sounds
 	framecount=0
 	tpos=0
